@@ -11,7 +11,7 @@ This Engine project is currently made from scratch
 - [Vulkan SDK](https://vulkan.lunarg.com/sdk/home#windows) (preferably a recent version)
 
 ## Getting Started
-
+To install walnut dependencies you need to run Setup.bat inside Scripts
 
 ### 3rd party libaries
 - [Dear ImGui](https://github.com/ocornut/imgui)
