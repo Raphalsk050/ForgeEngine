@@ -53,6 +53,12 @@ add_library(ForgeEngine STATIC
         Core/Renderer/RenderCommand.cpp
         Core/Renderer/Renderer.h
         Core/Renderer/Renderer.cpp
+        Core/Layer/layer.h
+        Core/Layer/layer.cpp
+        Core/Layer/LayerStack.h
+        Core/Layer/LayerStack.cpp
+        Core/Imgui/ImguiLayer.h
+        Core/Imgui/ImguiLayer.cpp
         Platform/OpenGL/OpenGLRendererAPI.h
         Platform/OpenGL/OpenGLRendererAPI.cpp
         Platform/OpenGL/OpenGLContext.h

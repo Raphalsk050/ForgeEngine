@@ -2,6 +2,8 @@
 
 #include <functional>
 #include <string>
+
+#include "Config.h"
 #include "spdlog/sinks/basic_file_sink-inl.h"
 
 using namespace std;

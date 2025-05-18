@@ -2,6 +2,7 @@
 
 #include "Core/Event/KeyEvent.h"
 #include "Core/Input/Input.h"
+#include "Core/Renderer/RenderCommand.h"
 
 namespace ForgeEngine {
     class Nidavellir : public Application {

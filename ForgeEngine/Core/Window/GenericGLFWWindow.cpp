@@ -6,6 +6,7 @@
 #include "Core/Event/MouseEvent.h"
 #include "Core/Renderer/Renderer.h"
 #include "Core/Renderer/RendererAPI.h"
+#include "glad/glad.h"
 
 
 namespace ForgeEngine {
@@ -34,6 +35,8 @@ namespace ForgeEngine {
 	void GenericWindow::Init(const WindowProps& props)
 	{
 		FENGINE_PROFILE_FUNCTION();
+		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
 
 		data_.Title = props.Title;
 		data_.Width = props.Width;
@@ -173,6 +176,8 @@ namespace ForgeEngine {
 	{
 		FENGINE_PROFILE_FUNCTION();
 
+		// glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+		// glClear(GL_COLOR_BUFFER_BIT);
 		glfwPollEvents();
 		context_->SwapBuffers();
 	}

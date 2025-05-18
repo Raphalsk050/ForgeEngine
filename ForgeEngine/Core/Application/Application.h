@@ -2,6 +2,9 @@
 #include "FEPCH.h"
 #include "Core/Window/Window.h"
 #include "Core/Event/WindowApplicationEvent.h"
+#include "Core/Imgui/ImguiLayer.h"
+#include "Core/Layer/Layer.h"
+#include "Core/Layer/LayerStack.h"
 
 
 using namespace std;
@@ -30,10 +33,10 @@ namespace ForgeEngine {
     virtual ~Application();
 
     void OnEvent(Event &e);
-    //
-    // void PushLayer(Layer *layer);
-    //
-    // void PushOverlay(Layer *layer);
+
+    void PushLayer(Layer *layer);
+
+    void PushOverlay(Layer *layer);
 
     Window &GetWindow() const { return *window_; }
 
@@ -59,10 +62,10 @@ namespace ForgeEngine {
   private:
     ApplicationSpecification specification_;
     Scope<Window> window_;
-    // ImGuiLayer *imgui_layer_;
+    ImGuiLayer *imgui_layer_;
     bool running_ = true;
     bool minimized_ = false;
-    // LayerStack m_LayerStack;
+    LayerStack layer_stack_;
     float last_frame_time_ = 0.0f;
 
     vector<function<void()> > main_thread_queue_;

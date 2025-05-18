@@ -32,8 +32,8 @@ namespace ForgeEngine {
 
     //Renderer3D::Init();
 
-    //m_ImGuiLayer = new ImGuiLayer();
-    //PushOverlay(m_ImGuiLayer);
+    imgui_layer_ = new ImGuiLayer();
+    PushOverlay(imgui_layer_);
   }
 
   Application::~Application() {
@@ -43,19 +43,19 @@ namespace ForgeEngine {
     //Renderer::Shutdown();
   }
 
-  // void Application::PushLayer(Layer *layer) {
-  //   FENGINE_PROFILE_FUNCTION();
-  //
-  //   layer_stack.PushLayer(layer);
-  //   layer->OnAttach();
-  // }
+  void Application::PushLayer(Layer *layer) {
+    FENGINE_PROFILE_FUNCTION();
 
-  // void Application::PushOverlay(Layer *layer) {
-  //   FENGINE_PROFILE_FUNCTION();
-  //
-  //   m_LayerStack.PushOverlay(layer);
-  //   layer->OnAttach();
-  // }
+    layer_stack_.PushLayer(layer);
+    layer->OnAttach();
+  }
+
+  void Application::PushOverlay(Layer *layer) {
+    FENGINE_PROFILE_FUNCTION();
+
+    layer_stack_.PushOverlay(layer);
+    layer->OnAttach();
+  }
 
   void Application::Close() {
     running_ = false;
@@ -74,11 +74,11 @@ namespace ForgeEngine {
     dispatcher.Dispatch<WindowCloseEvent>(FENGINE_BIND_EVENT_FN(Application::OnWindowClose));
     dispatcher.Dispatch<WindowResizeEvent>(FENGINE_BIND_EVENT_FN(Application::OnWindowResize));
 
-    // for (auto it = m_LayerStack.rbegin(); it != m_LayerStack.rend(); ++it) {
-    //   if (e.Handled)
-    //     break;
-    //   (*it)->OnEvent(e);
-    // }
+    for (auto it = layer_stack_.rbegin(); it != layer_stack_.rend(); ++it) {
+      if (e.Handled)
+        break;
+      (*it)->OnEvent(e);
+    }
   }
 
   void Application::Run() {
@@ -93,25 +93,26 @@ namespace ForgeEngine {
 
       ExecuteMainThreadQueue();
 
-      // if (!minimized_) {
-      //   {
-      //     FENGINE_PROFILE_SCOPE("LayerStack OnUpdate");
-      //
-      //     for (Layer *layer: m_LayerStack)
-      //       layer->OnUpdate(timestep);
-      //   }
-      //
-      //   m_ImGuiLayer->Begin(); {
-      //     FENGINE_PROFILE_SCOPE("LayerStack OnImGuiRender");
-      //
-      //     for (Layer *layer: m_LayerStack)
-      //       layer->OnImGuiRender();
-      //   }
-      //   m_ImGuiLayer->End();
-      // }
+      if (!minimized_) {
+        {
+          FENGINE_PROFILE_SCOPE("LayerStack OnUpdate");
+
+          for (Layer *layer: layer_stack_)
+            layer->OnUpdate(timestep);
+        }
+
+        imgui_layer_->Begin(); {
+          FENGINE_PROFILE_SCOPE("LayerStack OnImGuiRender");
+
+          for (Layer *layer: layer_stack_)
+            layer->OnImGuiRender();
+        }
+        imgui_layer_->End();
+      }
 
       window_->OnUpdate();
 
+      // TODO(rafael): this is a temporary feature
       if (Input::IsKeyPressed(Key::Escape))
       {
         FENGINE_CORE_INFO("Escape key was pressed!");
