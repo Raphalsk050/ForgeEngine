@@ -108,5 +108,33 @@ target_include_directories(ImGuizmo PUBLIC
         ${imgui_DIR}
 )
 
-target_compile_definitions(ForgeEngine PUBLIC #[[DEBUG]] FENGINE_PLATFORM_APPLE)
 set_target_properties(ForgeEngine PROPERTIES LINKER_LANGUAGE CXX)
+
+###############################################################
+#### compile commands #########################################
+###############################################################
+target_compile_definitions(ForgeEngine
+        PRIVATE
+        $<$<CONFIG:Debug>:DEBUG>
+        $<$<CONFIG:Release>:NDEBUG>
+)
+
+###############################################################
+#### platform detection #######################################
+###############################################################
+if (WIN32)
+    target_compile_definitions(ForgeEngine
+            PUBLIC
+            FENGINE_PLATFORM_WINDOWS
+    )
+elseif (APPLE)
+    target_compile_definitions(ForgeEngine
+            PUBLIC
+            FENGINE_PLATFORM_APPLE
+    )
+elseif (UNIX)
+    target_compile_definitions(ForgeEngine
+            PUBLIC
+            FENGINE_PLATFORM_LINUX
+    )
+endif ()
