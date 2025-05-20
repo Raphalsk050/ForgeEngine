@@ -1,5 +1,6 @@
 #include <ForgeEngine.h>
 
+#include "NidavellirLayer.h"
 #include "Core/Event/KeyEvent.h"
 #include "Core/Input/Input.h"
 #include "Core/Renderer/RenderCommand.h"
@@ -9,7 +10,7 @@ namespace ForgeEngine {
     public:
         explicit Nidavellir(const ApplicationSpecification &spec)
           : Application(spec) {
-            //PushLayer(new EditorLayer());
+            PushLayer(new NidavellirLayer());
         }
     };
 

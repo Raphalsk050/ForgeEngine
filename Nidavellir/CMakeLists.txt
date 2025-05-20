@@ -1,4 +1,6 @@
 add_executable(Nidavellir
+        NidavellirLayer.h
+        NidavellirLayer.cpp
         Nidavellir.cpp
 )
 
