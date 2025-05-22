@@ -1,12 +1,32 @@
 #include "NidavellirLayer.h"
-
 #include "imgui.h"
+#include "Core/Application/Application.h"
 #include "Core/Renderer/RenderCommand.h"
+#include "Core/Renderer/Renderer3D.h"
+#include "GLFW/glfw3.h"
+#include "glad/glad.h"
+
+#include "ext/matrix_transform.hpp"
+
+#include "gtc/type_ptr.hpp"
+#include "Platform/OpenGL/OpenGLBuffer.h"
+#include "Platform/OpenGL/OpenGLShader.h"
 
 namespace ForgeEngine
 {
+    NidavellirLayer::NidavellirLayer(): Layer("GenericLayer"),
+                                        square_color_({0.2f, 0.3f, 0.8f, 1.0f})
+    {
+        auto height = Application::Get().GetWindow().GetHeight();
+        auto width = Application::Get().GetWindow().GetWidth();
+        camera_controller_ = Camera3DController(width/height);
+    }
+
+
     void NidavellirLayer::OnAttach()
     {
+        auto window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow());
+        //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
         Layer::OnAttach();
     }
 
@@ -17,32 +37,35 @@ namespace ForgeEngine
 
     void NidavellirLayer::OnUpdate(Timestep ts)
     {
+        camera_controller_.OnUpdate(ts);
 
-        color_[3] -= ts.GetMilliseconds() * threshold_;
-
-        if (color_[3] <= 0.f)
+        Renderer3D::ResetStats();
         {
-            color_ = {0.0f, 0.0f, 0.0f, 1.0f};
-            color_[count_ % 3] = 1.0f;
-            count_++;
+            RenderCommand::SetClearColor({0.2f, 0.2f, 0.2f, 1});
+            RenderCommand::Clear();
         }
 
-        new_color_[0] = color_[0];
-        new_color_[1] = color_[1];
-        new_color_[2] = color_[2];
-        new_color_[3] = color_[3];
-        RenderCommand::SetClearColor(color_);
-
-
-
         Layer::OnUpdate(ts);
+        {
+            static float rotation = 0.0f;
+            rotation += ts * 1.0f;
+            Renderer3D::BeginScene(camera_controller_);
+            Renderer3D::DrawBox(quad_position_, quad_size_, {1.0, 1.0, 1.0, 1.0});
+            //Renderer3D::DrawSphere(quad_position_, 1.0, square_color_);
+            Renderer3D::DrawLine3D({0.0, 0.0,-1.0}, {0.0, 0.0,1.0}, {1.0, 1.0, 1.0, 1.0});
+            Renderer3D::EndScene();
+        }
     }
 
     void NidavellirLayer::OnImGuiRender()
     {
         Layer::OnImGuiRender();
         ImGui::Begin("Nidavellir Layer");
-        ImGui::DragFloat4("Color",new_color_,0.0,1.0);
+        //ImGui::DragFloat("Velocity", &velocity_, 0.001,-1.0,1.0);
+        ImGui::DragFloat4("Color", glm::value_ptr(square_color_), 0.0, 1.0);
+        ImGui::DragFloat3("Color", glm::value_ptr(quad_size_), 0.0, 1.0);
+        ImGui::SliderFloat3("Camera position", const_cast<float*>(glm::value_ptr(camera_controller_.GetPosition())), -1.0f, 1.0f, "%.3f");
+        ImGui::SliderFloat3("Camera rotation", const_cast<float*>(glm::value_ptr(camera_controller_.GetRotation())), -1.0f, 1.0f, "%.3f");
         ImGui::Text("Nidavellir Layer");
         ImGui::End();
     }
@@ -50,5 +73,6 @@ namespace ForgeEngine
     void NidavellirLayer::OnEvent(Event& event)
     {
         Layer::OnEvent(event);
+        camera_controller_.OnEvent(event);
     }
 }

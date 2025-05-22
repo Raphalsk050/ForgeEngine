@@ -9,14 +9,14 @@ namespace ForgeEngine {
 Ref<Shader> Shader::Create(const std::string& filepath) {
   switch (Renderer::GetAPI()) {
     case RendererAPI::API::None:
-      BENGINE_CORE_ASSERT(false,
+      FENGINE_CORE_ASSERT(false,
                           "RendererAPI::None is currently not supported!");
       return nullptr;
     case RendererAPI::API::OpenGL:
       return CreateRef<OpenGLShader>(filepath);
   }
 
-  BENGINE_CORE_ASSERT(false, "Unknown RendererAPI!");
+  FENGINE_CORE_ASSERT(false, "Unknown RendererAPI!");
   return nullptr;
 }
 
@@ -25,19 +25,19 @@ Ref<Shader> Shader::Create(const std::string& name,
                            const std::string& fragmentSrc) {
   switch (Renderer::GetAPI()) {
     case RendererAPI::API::None:
-      BENGINE_CORE_ASSERT(false,
+      FENGINE_CORE_ASSERT(false,
                           "RendererAPI::None is currently not supported!");
       return nullptr;
     case RendererAPI::API::OpenGL:
       return CreateRef<OpenGLShader>(name, vertexSrc, fragmentSrc);
   }
 
-  BENGINE_CORE_ASSERT(false, "Unknown RendererAPI!");
+  FENGINE_CORE_ASSERT(false, "Unknown RendererAPI!");
   return nullptr;
 }
 
 void ShaderLibrary::Add(const std::string& name, const Ref<Shader>& shader) {
-  BENGINE_CORE_ASSERT(!Exists(name), "Shader already exists!");
+  FENGINE_CORE_ASSERT(!Exists(name), "Shader already exists!");
   m_Shaders[name] = shader;
 }
 
@@ -60,8 +60,8 @@ Ref<Shader> ShaderLibrary::Load(const std::string& name,
 }
 
 Ref<Shader> ShaderLibrary::Get(const std::string& name) {
-  BENGINE_CORE_ASSERT(Exists(name), "Shader not found!");
-  BENGINE_CORE_CRITICAL("Shader not found!");
+  FENGINE_CORE_ASSERT(Exists(name), "Shader not found!");
+  FENGINE_CORE_CRITICAL("Shader not found!");
   return m_Shaders[name];
 }
 

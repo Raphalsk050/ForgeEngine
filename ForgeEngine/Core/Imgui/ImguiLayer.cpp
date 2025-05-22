@@ -61,7 +61,7 @@ namespace ForgeEngine
 
     void ImGuiLayer::OnUpdate(Timestep ts)
     {
-        RenderCommand::Clear();
+        //RenderCommand::Clear();
         Layer::OnUpdate(ts);
     }
 

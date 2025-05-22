@@ -78,12 +78,12 @@ private:
     Camera3D m_Camera;
     
     // Control settings
-    ControlMode m_ControlMode = ControlMode::Fly;
-    bool m_MouseControlEnabled = false;
+    ControlMode m_ControlMode = ControlMode::Orbit;
+    bool m_MouseControlEnabled = true;
     bool m_MouseButtonPressed = false;
     
     // Camera parameters
-    float m_AspectRatio = 1.778f;
+    float m_AspectRatio = 1.33f;
     float m_Distance = 10.0f;      // Distance from focal point in orbit mode
     float m_Pitch = 0.0f;          // In degrees
     float m_Yaw = 0.0f;            // In degrees

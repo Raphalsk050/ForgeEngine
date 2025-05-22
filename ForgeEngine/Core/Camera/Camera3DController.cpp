@@ -12,7 +12,7 @@ namespace ForgeEngine
     Camera3DController::Camera3DController(float aspectRatio, ControlMode mode)
         : m_AspectRatio(aspectRatio), m_ControlMode(mode)
     {
-        m_Camera = Camera3D(45.0f, aspectRatio, 0.1f, 1000.0f);
+        m_Camera = Camera3D(90.0f, aspectRatio, 0.1f, 1000.0f);
 
         // Default camera position and orientation
         m_Camera.SetPosition({0.0f, 2.0f, 5.0f});
@@ -150,6 +150,7 @@ namespace ForgeEngine
 
     bool Camera3DController::OnMouseMoved(MouseMovedEvent& e)
     {
+        FENGINE_CORE_CRITICAL("MouseMoved");
         if (!m_MouseControlEnabled)
             return false;
 
@@ -208,6 +209,7 @@ namespace ForgeEngine
 
     bool Camera3DController::OnMouseScrolled(MouseScrolledEvent& e)
     {
+        FENGINE_CORE_CRITICAL("Window Resized");
         float zoomAmount = e.GetYOffset() * m_ZoomSpeed;
 
         if (m_ControlMode == ControlMode::Orbit)
@@ -227,6 +229,7 @@ namespace ForgeEngine
 
     bool Camera3DController::OnWindowResized(WindowResizeEvent& e)
     {
+        printf("Window Resized\n");
         OnResize(static_cast<float>(e.GetWidth()), static_cast<float>(e.GetHeight()));
         return false;
     }
@@ -240,6 +243,7 @@ namespace ForgeEngine
         {
         case Key::Space:
             m_MouseControlEnabled = !m_MouseControlEnabled;
+            FENGINE_CORE_INFO("Pressed space");
             m_FirstMouse = true;
             break;
         }

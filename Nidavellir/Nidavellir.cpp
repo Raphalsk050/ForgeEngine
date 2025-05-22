@@ -1,9 +1,7 @@
 #include <ForgeEngine.h>
 
 #include "NidavellirLayer.h"
-#include "Core/Event/KeyEvent.h"
-#include "Core/Input/Input.h"
-#include "Core/Renderer/RenderCommand.h"
+
 
 namespace ForgeEngine {
     class Nidavellir : public Application {
@@ -18,6 +16,8 @@ namespace ForgeEngine {
         ApplicationSpecification spec;
         spec.Name = "Nidavellir";
         spec.CommandLineArgs = args;
+        spec.WindowWidth = 800;
+        spec.WindowHeight = 600;
 
         return new Nidavellir(spec);
     }

@@ -23,6 +23,8 @@ namespace ForgeEngine {
   struct ApplicationSpecification {
     string Name = "Forge Engine Application";
     string WorkingDirectory;
+    uint32_t WindowWidth = 1280;
+    uint32_t WindowHeight = 720;
     ApplicationCommandLineArgs CommandLineArgs;
   };
 
@@ -42,7 +44,7 @@ namespace ForgeEngine {
 
     void Close();
 
-    //ImGuiLayer *GetImGuiLayer() { return imgui_layer_; }
+    ImGuiLayer *GetImGuiLayer() { return imgui_layer_; }
 
     static Application &Get() { return *instance_; }
 

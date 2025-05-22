@@ -11,6 +11,7 @@
 #include "Core/Input/Input.h"
 #include "Core/Event/Event.h"
 #include "Core/Event/WindowApplicationEvent.h"
+#include "Core/Renderer/Renderer3D.h"
 // #include "Core/Renderer/Renderer3D.h"
 
 namespace ForgeEngine {
@@ -27,10 +28,10 @@ namespace ForgeEngine {
     if (!specification_.WorkingDirectory.empty())
       std::filesystem::current_path(specification_.WorkingDirectory);
 
-    window_ = Window::Create(WindowProps(specification_.Name));
+    window_ = Window::Create(WindowProps(specification_.Name,specification_.WindowWidth, specification_.WindowHeight));
     window_->SetEventCallback(FENGINE_BIND_EVENT_FN(Application::OnEvent));
 
-    //Renderer3D::Init();
+    Renderer3D::Init();
 
     imgui_layer_ = new ImGuiLayer();
     PushOverlay(imgui_layer_);
@@ -135,7 +136,6 @@ namespace ForgeEngine {
     }
 
     minimized_ = false;
-    //Renderer::OnWindowResize(e.GetWidth(), e.GetHeight());
 
     return false;
   }
