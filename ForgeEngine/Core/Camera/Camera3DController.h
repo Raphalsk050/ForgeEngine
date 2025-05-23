@@ -32,11 +32,9 @@ public:
     const glm::vec3& GetPosition() const { return m_Camera.GetPosition(); }
     
     void SetRotation(const glm::vec3& rotation);
-    const glm::vec3& GetRotation() const { return m_Camera.GetRotation(); }
-    
+
     void SetFocalPoint(const glm::vec3& focalPoint);
-    const glm::vec3& GetFocalPoint() const { return m_Camera.GetFocalPoint(); }
-    
+
     void SetDistance(float distance) { m_Distance = distance; }
     float GetDistance() const { return m_Distance; }
     

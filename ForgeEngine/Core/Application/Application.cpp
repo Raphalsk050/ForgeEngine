@@ -41,7 +41,7 @@ namespace ForgeEngine {
     FENGINE_PROFILE_FUNCTION();
 
     //ScriptEngine::Shutdown();
-    //Renderer::Shutdown();
+    Renderer3D::Shutdown();
   }
 
   void Application::PushLayer(Layer *layer) {

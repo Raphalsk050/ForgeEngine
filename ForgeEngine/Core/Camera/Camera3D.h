@@ -24,6 +24,7 @@ public:
 
     void SetPerspective(float fov, float aspectRatio, float nearClip, float farClip);
     void SetViewport(float width, float height);
+    void SetCameraForwardDirection(glm::vec3 direction);
     
     // Updates the view matrix and frustum planes
     void RecalculateViewMatrix();
@@ -36,13 +37,7 @@ public:
     
     // Position and orientation control
     void SetPosition(const glm::vec3& position);
-    const glm::vec3& GetPosition() const { return m_Position; }
-    
-    void SetRotation(const glm::vec3& rotation);
-    const glm::vec3& GetRotation() const { return m_Rotation; }
-    
-    void SetFocalPoint(const glm::vec3& focalPoint);
-    const glm::vec3& GetFocalPoint() const { return m_FocalPoint; }
+    const glm::vec3& GetPosition() const { return camera_pos_; }
     
     // Direction vectors
     glm::vec3 GetForwardDirection() const;
@@ -64,11 +59,12 @@ public:
     float GetFOV() const { return m_FOV; }
     
 private:
-    // Camera view properties
-    glm::vec3 m_Position = { 0.0f, 0.0f, 5.0f };
-    glm::vec3 m_Rotation = { 0.0f, 0.0f, 0.0f }; // Pitch, Yaw, Roll (in radians)
-    glm::vec3 m_FocalPoint = { 0.0f, 0.0f, 0.0f };
-    
+    glm::vec3 camera_pos_   = glm::vec3(0.0f, 0.0f,  3.0f);
+    glm::vec3 camera_front_ = glm::vec3(0.0f, 0.0f, -1.0f);
+    glm::vec3 camera_up_    = glm::vec3(0.0f, 1.0f,  0.0f);
+
+    glm::vec3 camera_target_ = glm::vec3(0.0f, 0.0f, 0.0f);
+
     // Camera projection properties
     float m_FOV = 45.0f;
     float m_AspectRatio = 1.778f;

@@ -26,7 +26,7 @@ namespace ForgeEngine
     void NidavellirLayer::OnAttach()
     {
         auto window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow());
-        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
         Layer::OnAttach();
     }
 
@@ -62,7 +62,6 @@ namespace ForgeEngine
         ImGui::DragFloat4("Color", glm::value_ptr(square_color_), 0.0, 1.0);
         ImGui::DragFloat3("Color", glm::value_ptr(quad_size_), 0.0, 1.0);
         ImGui::SliderFloat3("Camera position", const_cast<float*>(glm::value_ptr(camera_controller_.GetPosition())), -1.0f, 1.0f, "%.3f");
-        ImGui::SliderFloat3("Camera rotation", const_cast<float*>(glm::value_ptr(camera_controller_.GetRotation())), -1.0f, 1.0f, "%.3f");
         ImGui::Text("Nidavellir Layer");
         ImGui::End();
     }

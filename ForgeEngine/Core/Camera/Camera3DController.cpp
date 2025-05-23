@@ -14,7 +14,6 @@ namespace ForgeEngine
     {
         m_Camera = Camera3D(90.0f, aspectRatio, 0.1f, 1000.0f);
         m_Camera.SetPosition({0.0f, 2.0f, 5.0f});
-        m_Camera.SetRotation({glm::radians(-15.0f), 0.0f, 0.0f});
     }
 
     void Camera3DController::OnUpdate(Timestep ts)
@@ -112,24 +111,24 @@ namespace ForgeEngine
 
     void Camera3DController::UpdateCameraPositionFromOrbit()
     {
-        float pitch = glm::radians(m_Pitch);
-        float yaw = glm::radians(m_Yaw);
-
-        // Convert spherical coordinates to Cartesian
-        float x = m_Distance * std::cos(pitch) * std::sin(yaw);
-        float y = m_Distance * std::sin(pitch);
-        float z = m_Distance * std::cos(pitch) * std::cos(yaw);
-
-        glm::vec3 focalPoint = m_Camera.GetFocalPoint();
-        glm::vec3 position = focalPoint + glm::vec3(x, y, z);
-
-        // Compute rotation to look at focal point
-        glm::vec3 direction = glm::normalize(focalPoint - position);
-        float pitchAngle = glm::asin(direction.y);
-        float yawAngle = glm::atan(direction.x, direction.z);
-
-        m_Camera.SetPosition(position);
-        m_Camera.SetRotation({pitchAngle, yawAngle, 0.0f});
+        // float pitch = glm::radians(m_Pitch);
+        // float yaw = glm::radians(m_Yaw);
+        //
+        // // Convert spherical coordinates to Cartesian
+        // float x = m_Distance * std::cos(pitch) * std::sin(yaw);
+        // float y = m_Distance * std::sin(pitch);
+        // float z = m_Distance * std::cos(pitch) * std::cos(yaw);
+        //
+        // glm::vec3 focalPoint = m_Camera.GetFocalPoint();
+        // glm::vec3 position = focalPoint + glm::vec3(x, y, z);
+        //
+        // // Compute rotation to look at focal point
+        // glm::vec3 direction = glm::normalize(focalPoint - position);
+        // float pitchAngle = glm::asin(direction.y);
+        // float yawAngle = glm::atan(direction.x, direction.z);
+        //
+        // m_Camera.SetPosition(position);
+        // m_Camera.SetRotation({pitchAngle, yawAngle, 0.0f});
     }
 
     void Camera3DController::OnEvent(Event& e)
@@ -145,42 +144,37 @@ namespace ForgeEngine
 
     bool Camera3DController::OnMouseMoved(MouseMovedEvent& e)
     {
-        if (!m_MouseControlEnabled)
-            return false;
-
-        if (m_FirstMouse) {
-            m_LastMousePosition = {e.GetX(), e.GetY()};
+        if (m_FirstMouse)
+        {
+            m_LastMousePosition.x = e.GetX();
+            m_LastMousePosition.y = e.GetY();
             m_FirstMouse = false;
-            return false;
         }
 
-        float xOffset = -e.GetX() + m_LastMousePosition.x;
-        float yOffset = e.GetY() - m_LastMousePosition.y;
-        m_LastMousePosition = {e.GetX(), e.GetY()};
+        float xoffset = e.GetX() - m_LastMousePosition.x;
+        float yoffset = m_LastMousePosition.y - e.GetY();
+        m_LastMousePosition.x = e.GetX();
+        m_LastMousePosition.y = e.GetY();
 
-        xOffset *= m_RotationSpeed;
-        yOffset *= m_RotationSpeed;
+        float sensitivity = 1.0f;
+        xoffset *= sensitivity;
+        yoffset *= sensitivity;
 
-        FENGINE_CORE_INFO("Mouse delta: xOffset={}, yOffset={}", xOffset, yOffset);
+        m_Yaw   += xoffset;
+        m_Pitch += yoffset;
 
-        if (m_ControlMode == ControlMode::Orbit) {
-            m_Yaw += xOffset;
-            m_Pitch = glm::clamp(m_Pitch - yOffset, -89.0f, 89.0f);
-            FENGINE_CORE_INFO("Orbit: Pitch={}, Yaw={}", m_Pitch, m_Yaw);
-            UpdateCameraPositionFromOrbit();
-        } else {
-            glm::vec3 currentRotation = m_Camera.GetRotation();
-            float pitch = glm::degrees(currentRotation.x) - yOffset;
-            float yaw = glm::degrees(currentRotation.y) + xOffset;
-            pitch = glm::clamp(pitch, -89.0f, 89.0f);
-            glm::vec3 newRotation = glm::vec3(glm::radians(pitch), glm::radians(yaw), 0.0f);
-            if (m_ControlMode == ControlMode::FirstPerson)
-                newRotation.z = 0.0f;
-            m_Camera.SetRotation(newRotation);
-            FENGINE_CORE_INFO("Rotation: Pitch={}, Yaw={}", glm::degrees(newRotation.x), glm::degrees(newRotation.y));
-        }
+        if(m_Pitch > 89.0f)
+            m_Pitch = 89.0f;
+        if(m_Pitch < -89.0f)
+            m_Pitch = -89.0f;
 
-        return false;
+        glm::vec3 direction;
+        direction.x = cos(glm::radians(m_Yaw)) * cos(glm::radians(m_Pitch));
+        direction.y = sin(glm::radians(m_Pitch));
+        direction.z = sin(glm::radians(m_Yaw)) * cos(glm::radians(m_Pitch));
+        m_Camera.SetCameraForwardDirection(glm::normalize(direction));
+
+        return true;
     }
 
     bool Camera3DController::OnMouseScrolled(MouseScrolledEvent& e)
@@ -207,7 +201,7 @@ namespace ForgeEngine
     {
         printf("Window Resized\n");
         OnResize(static_cast<float>(e.GetWidth()), static_cast<float>(e.GetHeight()));
-        return false;
+        return true;
     }
 
     bool Camera3DController::OnKeyPressed(KeyPressedEvent& e)
@@ -247,7 +241,7 @@ namespace ForgeEngine
             glm::radians(rotation.z)
         );
 
-        m_Camera.SetRotation(radians);
+        //m_Camera.SetRotation(radians);
 
         // Update derived pitch and yaw for orbit mode
         m_Pitch = rotation.x;
@@ -257,12 +251,12 @@ namespace ForgeEngine
 
     void Camera3DController::SetFocalPoint(const glm::vec3& focalPoint)
     {
-        m_Camera.SetFocalPoint(focalPoint);
-
-        if (m_ControlMode == ControlMode::Orbit)
-        {
-            // Update camera position to maintain orbit around new focal point
-            UpdateCameraPositionFromOrbit();
-        }
+        // m_Camera.SetFocalPoint(focalPoint);
+        //
+        // if (m_ControlMode == ControlMode::Orbit)
+        // {
+        //     // Update camera position to maintain orbit around new focal point
+        //     UpdateCameraPositionFromOrbit();
+        // }
     }
 } // namespace BEngine

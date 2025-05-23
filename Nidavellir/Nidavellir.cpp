@@ -16,8 +16,8 @@ namespace ForgeEngine {
         ApplicationSpecification spec;
         spec.Name = "Nidavellir";
         spec.CommandLineArgs = args;
-        spec.WindowWidth = 800;
-        spec.WindowHeight = 600;
+        spec.WindowWidth = 1600;
+        spec.WindowHeight = 900;
 
         return new Nidavellir(spec);
     }

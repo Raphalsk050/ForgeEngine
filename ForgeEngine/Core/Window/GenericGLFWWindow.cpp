@@ -81,6 +81,8 @@ namespace ForgeEngine {
 
             WindowResizeEvent event(width, height);
             data.EventCallback(event);
+            glad_glViewport(0,0,width,height);
+
         });
 
         glfwSetWindowCloseCallback(window_, [](GLFWwindow* window) {

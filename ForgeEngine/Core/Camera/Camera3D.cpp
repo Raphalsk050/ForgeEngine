@@ -6,6 +6,8 @@
 // The header needs to be included here after defining GLM_ENABLE_EXPERIMENTAL
 #include <gtx/quaternion.hpp>
 
+#include "gtc/type_ptr.hpp"
+
 namespace ForgeEngine {
 
 Camera3D::Camera3D(float fov, float aspectRatio, float nearClip, float farClip)
@@ -29,24 +31,23 @@ void Camera3D::SetPerspective(float fov, float aspectRatio, float nearClip, floa
 void Camera3D::SetViewport(float width, float height)
 {
     m_AspectRatio = width / height;
+    FENGINE_CORE_INFO("Viewport ({},{})", width, height);
     m_Projection = glm::perspective(glm::radians(m_FOV), m_AspectRatio, m_NearClip, m_FarClip);
     RecalculateFrustum();
+    RecalculateViewMatrix();
+}
+
+void Camera3D::SetCameraForwardDirection(glm::vec3 direction)
+{
+    camera_front_ = direction;
 }
 
 void Camera3D::RecalculateViewMatrix()
 {
     FENGINE_PROFILE_FUNCTION();
 
-    // Create rotation matrix from Euler angles (pitch, yaw, roll)
-    glm::mat4 rotationMatrix = glm::mat4(1.0f);
-    rotationMatrix = glm::rotate(rotationMatrix, m_Rotation.x, glm::vec3(1.0f, 0.0f, 0.0f)); // Pitch
-    rotationMatrix = glm::rotate(rotationMatrix, m_Rotation.y, glm::vec3(0.0f, 1.0f, 0.0f)); // Yaw
-    rotationMatrix = glm::rotate(rotationMatrix, m_Rotation.z, glm::vec3(0.0f, 0.0f, 1.0f)); // Roll
+    m_ViewMatrix = glm::lookAt(camera_pos_, camera_pos_ + camera_front_, camera_up_);
 
-    // Create view matrix: inverse of the camera's transformation matrix
-    m_ViewMatrix = glm::inverse(glm::translate(glm::mat4(1.0f), m_Position) * rotationMatrix);
-
-    // Recalculate frustum planes after view matrix changes
     RecalculateFrustum();
 }
 
@@ -150,67 +151,23 @@ bool Camera3D::AABBInFrustum(const glm::vec3& min, const glm::vec3& max) const
 
 void Camera3D::SetPosition(const glm::vec3& position)
 {
-    m_Position = position;
-    //FENGINE_CORE_INFO("Camera position: ({},{},{})",position.x,position.y,position.z);
+    camera_pos_ = position;
     RecalculateViewMatrix();
-}
-
-void Camera3D::SetRotation(const glm::vec3& rotation)
-{
-    m_Rotation = rotation;
-    RecalculateViewMatrix();
-}
-
-void Camera3D::SetFocalPoint(const glm::vec3& focalPoint)
-{
-    m_FocalPoint = focalPoint;
-    // If using focal point, you would adjust position or rotation here
-    // For now, we just store it
 }
 
 glm::vec3 Camera3D::GetForwardDirection() const
 {
-    // Forward direction is -Z in view space
-    glm::vec3 forward(0.0f, 0.0f, -1.0f);
-
-    // Create rotation matrix from Euler angles
-    glm::mat4 rotationMatrix = glm::mat4(1.0f);
-    rotationMatrix = glm::rotate(rotationMatrix, m_Rotation.x, glm::vec3(1.0f, 0.0f, 0.0f));
-    rotationMatrix = glm::rotate(rotationMatrix, m_Rotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
-    rotationMatrix = glm::rotate(rotationMatrix, m_Rotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
-
-    // Transform the forward vector
-    return glm::normalize(glm::vec3(rotationMatrix * glm::vec4(forward, 0.0f)));
+    return camera_front_;
 }
 
 glm::vec3 Camera3D::GetRightDirection() const
 {
-    // Right direction is +X in view space
-    glm::vec3 right(1.0f, 0.0f, 0.0f);
-
-    // Create rotation matrix from Euler angles
-    glm::mat4 rotationMatrix = glm::mat4(1.0f);
-    rotationMatrix = glm::rotate(rotationMatrix, m_Rotation.x, glm::vec3(1.0f, 0.0f, 0.0f));
-    rotationMatrix = glm::rotate(rotationMatrix, m_Rotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
-    rotationMatrix = glm::rotate(rotationMatrix, m_Rotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
-
-    // Transform the right vector
-    return glm::normalize(glm::vec3(rotationMatrix * glm::vec4(right, 0.0f)));
+    return glm::cross(camera_front_,camera_up_);
 }
 
 glm::vec3 Camera3D::GetUpDirection() const
 {
-    // Up direction is +Y in view space
-    glm::vec3 up(0.0f, 1.0f, 0.0f);
-
-    // Create rotation matrix from Euler angles
-    glm::mat4 rotationMatrix = glm::mat4(1.0f);
-    rotationMatrix = glm::rotate(rotationMatrix, m_Rotation.x, glm::vec3(1.0f, 0.0f, 0.0f));
-    rotationMatrix = glm::rotate(rotationMatrix, m_Rotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
-    rotationMatrix = glm::rotate(rotationMatrix, m_Rotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
-
-    // Transform the up vector
-    return glm::normalize(glm::vec3(rotationMatrix * glm::vec4(up, 0.0f)));
+    return camera_up_;
 }
 
 } // namespace BEngine
