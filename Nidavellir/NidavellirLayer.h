@@ -27,6 +27,7 @@ namespace ForgeEngine
         float alpha_ = 1.0f;
         float threshold_ = 0.001f;
         int count_ = 0;
+        float time_ = 0.0f;
         float new_color_[4] = {};
         glm::vec4 color_ = glm::vec4{1.0f,0.0f,0.0f,1.0f};
     };

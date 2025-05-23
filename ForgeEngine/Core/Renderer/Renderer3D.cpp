@@ -162,7 +162,7 @@ namespace ForgeEngine
         s_Data.LineVertexBuffer->SetLayout({
             {ShaderDataType::Float3, "a_Position"},
             {ShaderDataType::Float4, "a_Color"},
-            {ShaderDataType::Int, "a_EntityID"}
+            {ShaderDataType::Int, "a_EntityID"},
         });
         s_Data.LineVertexArray->AddVertexBuffer(s_Data.LineVertexBuffer);
         s_Data.LineVertexBufferBase = new LineVertex3D[Renderer3DData::MaxVertices];
@@ -470,6 +470,7 @@ namespace ForgeEngine
             s_Data.WireframeShader->Bind();
             s_Data.WireframeShader->SetMat4("u_Transform", transform);
             s_Data.WireframeShader->SetFloat4("u_Color", material->GetAlbedoColor());
+            s_Data.WireframeShader->SetFloat("a_Time", 2.0f);
         }
         else
         {

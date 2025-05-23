@@ -114,9 +114,9 @@ namespace ForgeEngine
             ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings |
             ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
         if (corner != -1) window_flags |= ImGuiWindowFlags_NoMove;
-        if (ImGui::Begin("Block Engine Status", (bool*)1, window_flags))
+        if (ImGui::Begin("Forge Engine Status", (bool*)1, window_flags))
         {
-            ImGui::Text("Block Engine Status\n\n\n\n");
+            ImGui::Text("Forge Engine Status\n\n\n\n");
             ImGui::Separator();
             ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
             ImGui::Separator();

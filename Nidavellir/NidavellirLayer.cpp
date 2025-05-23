@@ -47,10 +47,21 @@ namespace ForgeEngine
 
         Renderer3D::BeginScene(camera_controller_.GetCamera());
         // Draw a red line
-        Renderer3D::DrawLine3D({-0.5f, 0.0f, -1.0f}, {0.5f, 0.0f, -1.0f}, {1.0f, 0.0f, 0.0f, 1.0f}, -1);
+        Renderer3D::DrawLine3D({-0.5f, 0.0f, -1.0f}, {0.5f, 0.0f, -1.0f}, {1.0f, 0.0f, 0.0f, 1.0f});
         // Draw a green cube
-        glm::mat4 transform = glm::translate(glm::mat4(1.0f), {0.0f, 0.0f, -1.0f});
-        Renderer3D::DrawBox(transform, {0.0f, 1.0f, 0.0f, 1.0f}, -1);
+        time_ += ts;
+        int amount = 64;
+        for (int i = 0; i < amount; i++)
+        {
+            for (int j = 0; j < amount; j++)
+            {
+                auto size = glm::vec3(1.0);
+                auto height = sin(i * size.y + time_) + cos(j * size.y + time_);
+
+                auto position = glm::vec3(size.x * i,height,size.z * j);
+                Renderer3D::DrawBox(position,size, {float(i)/float(amount), 1.0f, float(j)/float(amount), 1.0f});
+            }
+        }
         Renderer3D::EndScene();
     }
 
