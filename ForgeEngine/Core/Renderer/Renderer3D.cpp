@@ -8,6 +8,7 @@
 #include "Core/Renderer/Shader.h"
 #include "Core/Renderer/UniformBuffer.h"
 #include "Core/Renderer/VertexArray.h"
+#include "glad/glad.h"
 
 namespace ForgeEngine
 {
@@ -149,7 +150,7 @@ namespace ForgeEngine
             "Renderer3D_Wireframe.glsl");
         s_Data.LineShader = Shader::Create(
             "C:/_PROJECTS/ForgeEngine/Nidavellir/Assets/Shaders/"
-            "Renderer3D_Wireframe.glsl");
+            "Renderer3D_Line.glsl");
 
         if (s_Data.MeshShader == nullptr)
             FENGINE_CORE_CRITICAL("Mesh shader not found");
@@ -307,6 +308,7 @@ namespace ForgeEngine
     bool Renderer3D::IsEntityVisible(int entityID, const glm::mat4& transform,
                                      float boundingSphereRadius)
     {
+        return true;
         // Extract position from transform matrix
         glm::vec3 position(transform[3][0], transform[3][1], transform[3][2]);
 
@@ -322,7 +324,6 @@ namespace ForgeEngine
         s_Data.Stats.VisibleMeshCount = s_Data.VisibleMeshCount;
         s_Data.Stats.MeshCount = s_Data.TotalMeshCount;
         s_Data.Stats.CulledMeshCount = s_Data.TotalMeshCount - s_Data.VisibleMeshCount;
-
         Flush();
     }
 

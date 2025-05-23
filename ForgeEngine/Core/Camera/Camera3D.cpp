@@ -104,46 +104,46 @@ void Camera3D::RecalculateFrustum()
 
 bool Camera3D::PointInFrustum(const glm::vec3& point) const
 {
-    // Check if the point is inside all frustum planes
-    for (const auto& plane : m_FrustumPlanes)
-    {
-        if (glm::dot(glm::vec3(plane), point) + plane.w < 0.0f)
-            return false;
-    }
+    // // Check if the point is inside all frustum planes
+    // for (const auto& plane : m_FrustumPlanes)
+    // {
+    //     if (glm::dot(glm::vec3(plane), point) + plane.w < 0.0f)
+    //         return false;
+    // }
 
     return true;
 }
 
 bool Camera3D::SphereInFrustum(const glm::vec3& center, float radius) const
 {
-    // Check if the sphere is completely outside any frustum plane
-    for (const auto& plane : m_FrustumPlanes)
-    {
-        float distance = glm::dot(glm::vec3(plane), center) + plane.w;
-        if (distance < -radius)
-            return false;
-    }
+    // // Check if the sphere is completely outside any frustum plane
+    // for (const auto& plane : m_FrustumPlanes)
+    // {
+    //     float distance = glm::dot(glm::vec3(plane), center) + plane.w;
+    //     if (distance < -radius)
+    //         return false;
+    // }
 
     return true;
 }
 
 bool Camera3D::AABBInFrustum(const glm::vec3& min, const glm::vec3& max) const
 {
-    // Check if the AABB is completely outside any frustum plane
-    for (const auto& plane : m_FrustumPlanes)
-    {
-        glm::vec3 p;
-        glm::vec3 n = glm::vec3(plane);
-
-        // Find the positive vertex (P-vertex)
-        p.x = (n.x >= 0.0f) ? max.x : min.x;
-        p.y = (n.y >= 0.0f) ? max.y : min.y;
-        p.z = (n.z >= 0.0f) ? max.z : min.z;
-
-        // If the positive vertex is outside, the entire AABB is outside
-        if (glm::dot(n, p) + plane.w < 0.0f)
-            return false;
-    }
+    // // Check if the AABB is completely outside any frustum plane
+    // for (const auto& plane : m_FrustumPlanes)
+    // {
+    //     glm::vec3 p;
+    //     glm::vec3 n = glm::vec3(plane);
+    //
+    //     // Find the positive vertex (P-vertex)
+    //     p.x = (n.x >= 0.0f) ? max.x : min.x;
+    //     p.y = (n.y >= 0.0f) ? max.y : min.y;
+    //     p.z = (n.z >= 0.0f) ? max.z : min.z;
+    //
+    //     // If the positive vertex is outside, the entire AABB is outside
+    //     if (glm::dot(n, p) + plane.w < 0.0f)
+    //         return false;
+    // }
 
     return true;
 }

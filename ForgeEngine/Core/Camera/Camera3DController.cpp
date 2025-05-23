@@ -13,10 +13,8 @@ namespace ForgeEngine
         : m_AspectRatio(aspectRatio), m_ControlMode(mode)
     {
         m_Camera = Camera3D(90.0f, aspectRatio, 0.1f, 1000.0f);
-
-        // Default camera position and orientation
         m_Camera.SetPosition({0.0f, 2.0f, 5.0f});
-        m_Camera.SetRotation({glm::radians(-15.0f), 0.0f, 0.0f}); // Look slightly down
+        m_Camera.SetRotation({glm::radians(-15.0f), 0.0f, 0.0f});
     }
 
     void Camera3DController::OnUpdate(Timestep ts)
@@ -114,25 +112,22 @@ namespace ForgeEngine
 
     void Camera3DController::UpdateCameraPositionFromOrbit()
     {
-        // Calculate position based on orbit distance and angles
         float pitch = glm::radians(m_Pitch);
         float yaw = glm::radians(m_Yaw);
 
-        // Convert spherical coordinates to cartesian
+        // Convert spherical coordinates to Cartesian
         float x = m_Distance * std::cos(pitch) * std::sin(yaw);
         float y = m_Distance * std::sin(pitch);
         float z = m_Distance * std::cos(pitch) * std::cos(yaw);
 
-        // Position is relative to focal point
         glm::vec3 focalPoint = m_Camera.GetFocalPoint();
         glm::vec3 position = focalPoint + glm::vec3(x, y, z);
 
-        // Point camera at focal point
+        // Compute rotation to look at focal point
         glm::vec3 direction = glm::normalize(focalPoint - position);
         float pitchAngle = glm::asin(direction.y);
         float yawAngle = glm::atan(direction.x, direction.z);
 
-        // Set camera position and rotation
         m_Camera.SetPosition(position);
         m_Camera.SetRotation({pitchAngle, yawAngle, 0.0f});
     }
@@ -150,58 +145,39 @@ namespace ForgeEngine
 
     bool Camera3DController::OnMouseMoved(MouseMovedEvent& e)
     {
-        FENGINE_CORE_CRITICAL("MouseMoved");
         if (!m_MouseControlEnabled)
             return false;
 
-        if (m_FirstMouse)
-        {
+        if (m_FirstMouse) {
             m_LastMousePosition = {e.GetX(), e.GetY()};
             m_FirstMouse = false;
             return false;
         }
 
-        // Calcular delta do mouse
-        float xOffset = m_LastMousePosition.x - e.GetX();
-        float yOffset = m_LastMousePosition.y - e.GetY();
+        float xOffset = -e.GetX() + m_LastMousePosition.x;
+        float yOffset = e.GetY() - m_LastMousePosition.y;
         m_LastMousePosition = {e.GetX(), e.GetY()};
 
         xOffset *= m_RotationSpeed;
         yOffset *= m_RotationSpeed;
 
-        if (m_ControlMode == ControlMode::Orbit)
-        {
+        FENGINE_CORE_INFO("Mouse delta: xOffset={}, yOffset={}", xOffset, yOffset);
+
+        if (m_ControlMode == ControlMode::Orbit) {
             m_Yaw += xOffset;
-            m_Pitch = glm::clamp(m_Pitch + yOffset, -89.0f, 89.0f);
-
+            m_Pitch = glm::clamp(m_Pitch - yOffset, -89.0f, 89.0f);
+            FENGINE_CORE_INFO("Orbit: Pitch={}, Yaw={}", m_Pitch, m_Yaw);
             UpdateCameraPositionFromOrbit();
-        }
-        else
-        {
+        } else {
             glm::vec3 currentRotation = m_Camera.GetRotation();
-
-            glm::quat orientation = glm::quat(glm::vec3(currentRotation.x, currentRotation.y, currentRotation.z));
-
-            glm::vec3 right = m_Camera.GetRightDirection();
-            glm::vec3 up = m_Camera.GetUpDirection();
-
-            glm::quat pitchQuat = glm::angleAxis(glm::radians(yOffset), right);
-            glm::quat yawQuat = glm::angleAxis(glm::radians(xOffset), up);
-
-            orientation = yawQuat * pitchQuat * orientation;
-            orientation = glm::normalize(orientation);
-
-            glm::vec3 eulerAngles = glm::eulerAngles(orientation);
-
-            float pitchDegrees = glm::degrees(eulerAngles.x);
-            if (pitchDegrees > 89.0f) pitchDegrees = 89.0f;
-            if (pitchDegrees < -89.0f) pitchDegrees = -89.0f;
-            eulerAngles.x = glm::radians(pitchDegrees);
-
+            float pitch = glm::degrees(currentRotation.x) - yOffset;
+            float yaw = glm::degrees(currentRotation.y) + xOffset;
+            pitch = glm::clamp(pitch, -89.0f, 89.0f);
+            glm::vec3 newRotation = glm::vec3(glm::radians(pitch), glm::radians(yaw), 0.0f);
             if (m_ControlMode == ControlMode::FirstPerson)
-                eulerAngles.z = 0.0f;
-
-            m_Camera.SetRotation(eulerAngles);
+                newRotation.z = 0.0f;
+            m_Camera.SetRotation(newRotation);
+            FENGINE_CORE_INFO("Rotation: Pitch={}, Yaw={}", glm::degrees(newRotation.x), glm::degrees(newRotation.y));
         }
 
         return false;

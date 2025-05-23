@@ -26,7 +26,7 @@ namespace ForgeEngine
     void NidavellirLayer::OnAttach()
     {
         auto window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow());
-        //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
         Layer::OnAttach();
     }
 
@@ -45,16 +45,13 @@ namespace ForgeEngine
             RenderCommand::Clear();
         }
 
-        Layer::OnUpdate(ts);
-        {
-            static float rotation = 0.0f;
-            rotation += ts * 1.0f;
-            Renderer3D::BeginScene(camera_controller_);
-            Renderer3D::DrawBox(quad_position_, quad_size_, {1.0, 1.0, 1.0, 1.0});
-            //Renderer3D::DrawSphere(quad_position_, 1.0, square_color_);
-            Renderer3D::DrawLine3D({0.0, 0.0,-1.0}, {0.0, 0.0,1.0}, {1.0, 1.0, 1.0, 1.0});
-            Renderer3D::EndScene();
-        }
+        Renderer3D::BeginScene(camera_controller_.GetCamera());
+        // Draw a red line
+        Renderer3D::DrawLine3D({-0.5f, 0.0f, -1.0f}, {0.5f, 0.0f, -1.0f}, {1.0f, 0.0f, 0.0f, 1.0f}, -1);
+        // Draw a green cube
+        glm::mat4 transform = glm::translate(glm::mat4(1.0f), {0.0f, 0.0f, -1.0f});
+        Renderer3D::DrawBox(transform, {0.0f, 1.0f, 0.0f, 1.0f}, -1);
+        Renderer3D::EndScene();
     }
 
     void NidavellirLayer::OnImGuiRender()
