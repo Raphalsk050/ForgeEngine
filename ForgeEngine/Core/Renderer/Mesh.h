@@ -31,6 +31,7 @@ namespace ForgeEngine {
         static Ref<Mesh> CreatePlane(float width = 1.0f, float height = 1.0f);
 
     private:
+        friend class TestMesh;
         Ref<VertexArray> m_VertexArray;
         Ref<VertexBuffer> m_VertexBuffer;
         Ref<IndexBuffer> m_IndexBuffer;

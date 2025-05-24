@@ -1,41 +1,40 @@
 #type vertex
 #version 450 core
-
 layout(location = 0) in vec3 a_Position;
 layout(location = 1) in vec3 a_Normal;
 layout(location = 2) in vec3 a_Tangent;
 layout(location = 3) in vec2 a_TexCoord;
-layout(location = 4) in int a_EntityID;
 
 layout(std140, binding = 0) uniform Camera
 {
     mat4 u_ViewProjection;
     vec3 u_CameraPosition;
+    float _padding;
 };
 
-layout(std140, binding = 2) uniform Transform
-{
-    mat4 u_Transform;
-};
+uniform mat4 u_Transform;
+uniform int u_EntityID; // ← ADICIONADO: Uniform para entity ID
 
 layout(location = 0) out flat int v_EntityID;
 
 void main()
 {
-    vec3 worldPosition = vec3(u_Transform * vec4(a_Position, 1.0));
-    v_EntityID = a_EntityID;
-    gl_Position = u_ViewProjection * vec4(worldPosition, 1.0);
+    vec4 worldPosition = u_Transform * vec4(a_Position, 1.0);
+    gl_Position = u_ViewProjection * worldPosition;
+
+    // ✅ CORRIGIDO: Inicializar v_EntityID
+    v_EntityID = u_EntityID;
 }
 
 #type fragment
 #version 450 core
-
+layout(early_fragment_tests) in;
 layout(location = 0) out vec4 o_Color;
 layout(location = 1) out int o_EntityID;
 
 layout(location = 0) in flat int v_EntityID;
 
-// Movendo o uniforme para um bloco uniforme adequado
+// Material uniform buffer
 layout(std140, binding = 3) uniform Material
 {
     vec4 u_Color;
@@ -43,6 +42,13 @@ layout(std140, binding = 3) uniform Material
 
 void main()
 {
-    o_Color = u_Color;
+    vec4 finalColor = u_Color;
+
+    // Se u_Color for (0,0,0,0), usar cor padrão
+    if (finalColor.a <= 0.0) {
+        finalColor = vec4(1.0, 0.0, 1.0, 1.0); // Magenta para debug
+    }
+
+    o_Color = finalColor;
     o_EntityID = v_EntityID;
 }

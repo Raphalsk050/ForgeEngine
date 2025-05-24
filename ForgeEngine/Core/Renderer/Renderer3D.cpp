@@ -141,9 +141,118 @@ namespace ForgeEngine
         return transformMatrix;
     }
 
+    bool PerformCulling(int entityID, const glm::mat4& transform, float* outBoundingRadius = nullptr)
+    {
+        if (!s_Data.ActiveCamera || entityID < 0) {
+            if (s_Data.ActiveCamera == nullptr)
+            {
+                FENGINE_ASSERT(false, "No Active Camera!")
+                FENGINE_CORE_ERROR("No Active Camera!");
+            }
+
+            if (entityID < 0)
+            {
+                FENGINE_ASSERT(false, "EntityID is invalid!")
+                FENGINE_CORE_ERROR("EntityID is invalid!");
+            }
+
+            return true;
+        }
+
+        auto& cullingData = s_Data.EntityCullingInfo[entityID];
+
+        if (cullingData.BoundingSphereRadius == 0.0f) {
+            // Extrair escala do transform para calcular raio mais preciso
+            glm::vec3 scale;
+            scale.x = glm::length(glm::vec3(transform[0]));
+            scale.y = glm::length(glm::vec3(transform[1]));
+            scale.z = glm::length(glm::vec3(transform[2]));
+
+            // Usar a maior componente da escala como raio base
+            float maxScale = glm::max(glm::max(scale.x, scale.y), scale.z);
+            cullingData.BoundingSphereRadius = maxScale * 0.866f; // ~sqrt(3)/2 para cubo
+        }
+
+        s_Data.TotalMeshCount++;
+
+        // Executar teste de frustum culling
+        bool isVisible = Renderer3D::IsEntityVisible(entityID, transform, cullingData.BoundingSphereRadius);
+
+        if (isVisible) {
+            s_Data.VisibleMeshCount++;
+            cullingData.WasVisible = true;
+        } else {
+            cullingData.WasVisible = false;
+        }
+
+        // Retornar raio se solicitado
+        if (outBoundingRadius) {
+            *outBoundingRadius = cullingData.BoundingSphereRadius;
+        }
+
+        return isVisible;
+    }
+
+    // ============================================================================
+    // FUNÇÃO INTERNA DE RENDERIZAÇÃO (SEM CULLING)
+    // ============================================================================
+    void DrawMeshInternal(const glm::mat4& transform, Ref<Mesh> mesh, Ref<Material> material, int entityID)
+    {
+        // Bind material textures
+        if (material->GetAlbedoMap())
+            material->GetAlbedoMap()->Bind(0);
+        else
+            s_Data.WhiteTexture->Bind(0);
+
+        if (material->GetNormalMap())
+            material->GetNormalMap()->Bind(1);
+        else
+            s_Data.WhiteTexture->Bind(1);
+
+        if (material->GetMetallicMap())
+            material->GetMetallicMap()->Bind(2);
+        else
+            s_Data.WhiteTexture->Bind(2);
+
+        if (material->GetRoughnessMap())
+            material->GetRoughnessMap()->Bind(3);
+        else
+            s_Data.WhiteTexture->Bind(3);
+
+        // Use wireframe or standard shader based on the setting
+        if (s_Data.WireframeMode) {
+            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+            s_Data.WireframeShader->Bind();
+            s_Data.WireframeShader->SetMat4("u_Transform", transform);
+            s_Data.WireframeShader->SetFloat4("u_Color", material->GetAlbedoColor());
+            s_Data.WireframeShader->SetInt("u_EntityID", entityID);
+        } else {
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+            s_Data.MeshShader->Bind();
+            s_Data.MeshShader->SetMat4("u_Transform", transform);
+            s_Data.MeshShader->SetFloat4("u_MaterialAlbedoColor", material->GetAlbedoColor());
+            s_Data.MeshShader->SetFloat("u_MaterialMetallic", material->GetMetallic());
+            s_Data.MeshShader->SetFloat("u_MaterialRoughness", material->GetRoughness());
+            s_Data.MeshShader->SetInt("u_AlbedoMap", 0);
+            s_Data.MeshShader->SetInt("u_NormalMap", 1);
+            s_Data.MeshShader->SetInt("u_MetallicMap", 2);
+            s_Data.MeshShader->SetInt("u_RoughnessMap", 3);
+            s_Data.MeshShader->SetInt("u_EntityID", entityID);
+        }
+
+        // Draw the mesh
+        mesh->GetVertexArray()->Bind();
+        RenderCommand::DrawIndexed(mesh->GetVertexArray(), mesh->GetIndexCount());
+
+        s_Data.Stats.DrawCalls++;
+        s_Data.Stats.VertexCount += mesh->GetVertexCount();
+        s_Data.Stats.IndexCount += mesh->GetIndexCount();
+    }
+
     void Renderer3D::Init()
     {
         FENGINE_PROFILE_FUNCTION();
+        EarlyDepthTestManager::Initialize();
 
         // Create shaders
         s_Data.MeshShader = Shader::Create(
@@ -223,6 +332,7 @@ namespace ForgeEngine
     void Renderer3D::BeginScene(const Camera& camera, const glm::mat4& transform)
     {
         FENGINE_PROFILE_FUNCTION();
+        EarlyDepthTestManager::BeginFrame();
 
         s_Data.CameraBuffer.ViewProjection =
             camera.GetProjection() * glm::inverse(transform);
@@ -243,30 +353,10 @@ namespace ForgeEngine
         StartBatch();
     }
 
-    /*void Renderer3D::BeginScene(const EditorCamera& camera) {
-      FENGINE_PROFILE_FUNCTION();
-
-      s_Data.CameraBuffer.ViewProjection = camera.GetViewProjection();
-      s_Data.CameraBuffer.CameraPosition = camera.GetPosition();
-      s_Data.CameraUniformBuffer->SetData(&s_Data.CameraBuffer,
-                                          sizeof(Renderer3DData::CameraData));
-
-      // Update lighting data
-      s_Data.LightBuffer.PointLightPosition = s_Data.PointLightPosition;
-      s_Data.LightBuffer.AmbientLightColor = s_Data.AmbientLightColor;
-      s_Data.LightBuffer.AmbientLightIntensity = s_Data.AmbientLightIntensity;
-      s_Data.LightUniformBuffer->SetData(&s_Data.LightBuffer,
-                                         sizeof(Renderer3DData::LightData));
-
-      // Clear active camera since this is not a Camera3D
-      s_Data.ActiveCamera = nullptr;
-
-      StartBatch();
-    }*/
-
     void Renderer3D::BeginScene(const Camera3D& camera)
     {
         FENGINE_PROFILE_FUNCTION();
+        EarlyDepthTestManager::BeginFrame();
 
         s_Data.CameraBuffer.ViewProjection = camera.GetViewProjection();
         s_Data.CameraBuffer.CameraPosition = camera.GetPosition();
@@ -305,6 +395,7 @@ namespace ForgeEngine
     {
         if (s_Data.ActiveCamera)
         {
+            //FENGINE_CORE_INFO("SphereInFrustum: {}",s_Data.ActiveCamera->SphereInFrustum(center, radius));
             return s_Data.ActiveCamera->SphereInFrustum(center, radius);
         }
         return true;
@@ -322,22 +413,30 @@ namespace ForgeEngine
     bool Renderer3D::IsEntityVisible(int entityID, const glm::mat4& transform,
                                      float boundingSphereRadius)
     {
-        //return true;
         // Extract position from transform matrix
         glm::vec3 position(transform[3][0], transform[3][1], transform[3][2]);
 
-        // Use sphere test for quick culling
-        return IsSphereVisible(position, boundingSphereRadius);
+        glm::vec3 scale;
+        scale.x = glm::length(glm::vec3(transform[0]));
+        scale.y = glm::length(glm::vec3(transform[1]));
+        scale.z = glm::length(glm::vec3(transform[2]));
+
+        float maxScale = glm::max(glm::max(scale.x, scale.y), scale.z);
+        float adjustedRadius = boundingSphereRadius * maxScale;
+
+        // Use sphere test for culling
+        return IsSphereVisible(position, adjustedRadius);
     }
 
     void Renderer3D::EndScene()
     {
         FENGINE_PROFILE_FUNCTION();
 
-        // Update culling statistics before flushing
-        s_Data.Stats.VisibleMeshCount = s_Data.VisibleMeshCount;
+        // ✅ CORRIGIDO: Atualizar estatísticas antes de flush
         s_Data.Stats.MeshCount = s_Data.TotalMeshCount;
+        s_Data.Stats.VisibleMeshCount = s_Data.VisibleMeshCount;
         s_Data.Stats.CulledMeshCount = s_Data.TotalMeshCount - s_Data.VisibleMeshCount;
+
         Flush();
     }
 
@@ -345,8 +444,11 @@ namespace ForgeEngine
     {
         s_Data.LineVertexCount = 0;
         s_Data.LineVertexBufferPtr = s_Data.LineVertexBufferBase;
-
         s_Data.TextureSlotIndex = 1;
+
+        // ✅ CORRIGIDO: Reset dos contadores de culling
+        s_Data.VisibleMeshCount = 0;
+        s_Data.TotalMeshCount = 0;
     }
 
     void Renderer3D::Flush()
@@ -385,43 +487,22 @@ namespace ForgeEngine
         s_Data.SphereMesh = Mesh::CreateSphere();
     }
 
+    // ============================================================================
+    // DRAWMESH CORRIGIDO - VERSÃO COM COR
+    // ============================================================================
     void Renderer3D::DrawMesh(const glm::mat4& transform, Ref<Mesh> mesh,
                               const glm::vec4& color, int entityID)
     {
         FENGINE_PROFILE_FUNCTION();
 
-        // If we have an active camera and entityID is valid, check visibility
-        if (s_Data.ActiveCamera && entityID >= 0)
-        {
-            // Update or create entity culling data
-            auto& cullingData = s_Data.EntityCullingInfo[entityID];
-
-            // If this is the first time we're seeing this entity, calculate its bounds
-            if (cullingData.BoundingSphereRadius == 0.0f)
-            {
-                // In a real implementation, you would compute actual bounds from the mesh
-                // This is a simplified version using a fixed radius
-                cullingData.BoundingSphereRadius = 1.0f;
-            }
-
-            s_Data.TotalMeshCount++;
-
-            // Perform frustum culling
-            if (!IsEntityVisible(entityID, transform,
-                                 cullingData.BoundingSphereRadius))
-            {
-                cullingData.WasVisible = false;
-                return; // Skip rendering this mesh
-            }
-
-            cullingData.WasVisible = true;
-            s_Data.VisibleMeshCount++;
+        // ✅ CORRIGIDO: Culling centralizado
+        if (!PerformCulling(entityID, transform)) {
+            return; // Objeto foi cortado pelo frustum culling
         }
 
         // Configure default material with color
         s_Data.DefaultMaterial->SetAlbedoColor(color);
-
-        DrawMesh(transform, mesh, s_Data.DefaultMaterial, entityID);
+        DrawMeshInternal(transform, mesh, s_Data.DefaultMaterial, entityID);
     }
 
     void Renderer3D::DrawMesh(const glm::mat4& transform, Ref<Mesh> mesh,
@@ -429,87 +510,11 @@ namespace ForgeEngine
     {
         FENGINE_PROFILE_FUNCTION();
 
-        // If we have an active camera and entityID is valid, check visibility
-        if (s_Data.ActiveCamera && entityID >= 0)
-        {
-            // Update or create entity culling data
-            auto& cullingData = s_Data.EntityCullingInfo[entityID];
-
-            // If this is the first time we're seeing this entity, calculate its bounds
-            if (cullingData.BoundingSphereRadius == 0.0f)
-            {
-                // In a real implementation, you would compute actual bounds from the mesh
-                // This is a simplified version using a fixed radius
-                cullingData.BoundingSphereRadius = 1.0f;
-            }
-
-            s_Data.TotalMeshCount++;
-
-            // Perform frustum culling
-            if (!IsEntityVisible(entityID, transform,
-                                 cullingData.BoundingSphereRadius))
-            {
-                cullingData.WasVisible = false;
-                return; // Skip rendering this mesh
-            }
-
-            cullingData.WasVisible = true;
-            s_Data.VisibleMeshCount++;
+        if (!PerformCulling(entityID, transform)) {
+            return; // Objeto foi cortado pelo frustum culling
         }
 
-        // Bind material textures
-        if (material->GetAlbedoMap())
-            material->GetAlbedoMap()->Bind(0);
-        else
-            s_Data.WhiteTexture->Bind(0);
-
-        if (material->GetNormalMap())
-            material->GetNormalMap()->Bind(1);
-        else
-            s_Data.WhiteTexture->Bind(1);
-
-        if (material->GetMetallicMap())
-            material->GetMetallicMap()->Bind(2);
-        else
-            s_Data.WhiteTexture->Bind(2);
-
-        if (material->GetRoughnessMap())
-            material->GetRoughnessMap()->Bind(3);
-        else
-            s_Data.WhiteTexture->Bind(3);
-
-        // Use wireframe or standard shader based on the setting
-        if (s_Data.WireframeMode)
-        {
-            s_Data.WireframeShader->Bind();
-            s_Data.WireframeShader->SetMat4("u_Transform", transform);
-            s_Data.WireframeShader->SetFloat4("u_Color", material->GetAlbedoColor());
-            s_Data.WireframeShader->SetFloat("a_Time", 2.0f);
-        }
-        else
-        {
-            s_Data.MeshShader->Bind();
-            s_Data.MeshShader->SetMat4("u_Transform", transform);
-            s_Data.MeshShader->SetFloat4("u_MaterialAlbedoColor",
-                                         material->GetAlbedoColor());
-            s_Data.MeshShader->SetFloat("u_MaterialMetallic", material->GetMetallic());
-            s_Data.MeshShader->SetFloat("u_MaterialRoughness",
-                                        material->GetRoughness());
-            s_Data.MeshShader->SetInt("u_AlbedoMap", 0);
-            s_Data.MeshShader->SetInt("u_NormalMap", 1);
-            s_Data.MeshShader->SetInt("u_MetallicMap", 2);
-            s_Data.MeshShader->SetInt("u_RoughnessMap", 3);
-            s_Data.MeshShader->SetInt("u_EntityID", entityID);
-        }
-
-        // Draw the mesh
-        mesh->GetVertexArray()->Bind();
-        RenderCommand::DrawIndexed(mesh->GetVertexArray(), mesh->GetIndexCount());
-
-        s_Data.Stats.DrawCalls++;
-        s_Data.Stats.MeshCount++;
-        s_Data.Stats.VertexCount += mesh->GetVertexCount();
-        s_Data.Stats.IndexCount += mesh->GetIndexCount();
+        DrawMeshInternal(transform, mesh, material, entityID);
     }
 
     void Renderer3D::DrawMesh(const glm::vec3& position, const glm::vec3& scale,
@@ -713,9 +718,15 @@ namespace ForgeEngine
         s_Data.AmbientLightIntensity = intensity;
     }
 
-    void Renderer3D::EnableWireframe(bool enable) { s_Data.WireframeMode = enable; }
+    void Renderer3D::EnableWireframe(bool enable)
+    {
+        s_Data.WireframeMode = enable;
+    }
 
-    bool Renderer3D::IsWireframeEnabled() { return s_Data.WireframeMode; }
+    bool Renderer3D::IsWireframeEnabled()
+    {
+        return s_Data.WireframeMode;
+    }
 
     void Renderer3D::ResetStats()
     {
@@ -729,9 +740,80 @@ namespace ForgeEngine
         s_Data.Stats.VertexCount = 0;
         s_Data.Stats.IndexCount = 0;
 
-        s_Data.VisibleMeshCount = 0;
-        s_Data.TotalMeshCount = 0;
+        // Note: VisibleMeshCount e TotalMeshCount são resetados em StartBatch()
+        // não aqui, porque eles precisam ser acumulados durante o frame
     }
 
-    Renderer3D::Statistics Renderer3D::GetStats() { return s_Data.Stats; }
-} // namespace BEngine
+    Renderer3D::Statistics Renderer3D::GetStats()
+    {
+        return s_Data.Stats;
+    }
+
+    // ============================================================================
+    // FUNÇÃO PARA DEBUG DO CULLING
+    // ============================================================================
+    void Renderer3D::DebugCulling()
+    {
+        FENGINE_CORE_INFO("=== CULLING DEBUG ===");
+        FENGINE_CORE_INFO("Total meshes: {}", s_Data.TotalMeshCount);
+        FENGINE_CORE_INFO("Visible meshes: {}", s_Data.VisibleMeshCount);
+        FENGINE_CORE_INFO("Culled meshes: {}", s_Data.TotalMeshCount - s_Data.VisibleMeshCount);
+        FENGINE_CORE_INFO("Active camera: {}", s_Data.ActiveCamera ? "YES" : "NO");
+
+        if (s_Data.ActiveCamera) {
+            glm::vec3 camPos = s_Data.ActiveCamera->GetPosition();
+            FENGINE_CORE_INFO("Camera position: ({:.2f}, {:.2f}, {:.2f})",
+                             camPos.x, camPos.y, camPos.z);
+        }
+
+        // Log de algumas entidades
+        int count = 0;
+        for (const auto& [entityID, cullingData] : s_Data.EntityCullingInfo) {
+            if (count++ > 5) break; // Só mostrar as primeiras 5
+            FENGINE_CORE_INFO("Entity {}: radius={:.2f}, visible={}",
+                             entityID, cullingData.BoundingSphereRadius,
+                             cullingData.WasVisible ? "YES" : "NO");
+        }
+    }
+
+    // ============================================================================
+    // FUNÇÃO PARA FORÇAR RECÁLCULO DE BOUNDING SPHERES
+    // ============================================================================
+    void Renderer3D::RecalculateEntityBounds(int entityID)
+    {
+        auto it = s_Data.EntityCullingInfo.find(entityID);
+        if (it != s_Data.EntityCullingInfo.end()) {
+            it->second.BoundingSphereRadius = 0.0f; // Força recálculo
+        }
+    }
+
+    void Renderer3D::ClearCullingData()
+    {
+        s_Data.EntityCullingInfo.clear();
+    }
+
+    // ============================================================================
+    // GETTERS PARA ESTATÍSTICAS DE CULLING
+    // ============================================================================
+    uint32_t Renderer3D::GetTotalMeshCount()
+    {
+        return s_Data.TotalMeshCount;
+    }
+
+    uint32_t Renderer3D::GetVisibleMeshCount()
+    {
+        return s_Data.VisibleMeshCount;
+    }
+
+    uint32_t Renderer3D::GetCulledMeshCount()
+    {
+        return s_Data.TotalMeshCount - s_Data.VisibleMeshCount;
+    }
+
+    float Renderer3D::GetCullingEfficiency()
+    {
+        if (s_Data.TotalMeshCount == 0) return 0.0f;
+        return (float)(s_Data.TotalMeshCount - s_Data.VisibleMeshCount) / (float)s_Data.TotalMeshCount * 100.0f;
+    }
+
+} // namespace ForgeEngine

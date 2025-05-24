@@ -14,7 +14,6 @@
 #include "Core/Renderer/Mesh.h"
 #include "Core/Camera/Camera3DController.h"
 
-
 namespace ForgeEngine {
     class ForgeEngine {
     public:

@@ -28,7 +28,9 @@ namespace ForgeEngine
         float alpha_ = 1.0f;
         float threshold_ = 0.001f;
         int count_ = 0;
+        int debug_frame_ = 0;
         float time_ = 0.0f;
+        float previous_clicked_time_ = 0.0f;
         float new_color_[4] = {};
         bool pressed_ = false;
         Ref<Mesh> mesh_;

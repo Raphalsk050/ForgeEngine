@@ -297,6 +297,8 @@ forge_add_library(ForgeRenderer
         Core/Renderer/Renderer3D.cpp
         Core/Renderer/Mesh.h
         Core/Renderer/Mesh.cpp
+        Core/Renderer/TestMesh.cpp
+        Core/Renderer/TestMesh.h
 )
 
 set(FORGE_SHADER_LIBS "")

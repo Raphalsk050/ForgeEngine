@@ -66,60 +66,80 @@ void Camera3D::RecalculateFrustum()
     // Get the view-projection matrix
     glm::mat4 viewProj = m_Projection * m_ViewMatrix;
 
-    // Extract frustum planes from the view-projection matrix
-    // Left plane
-    m_FrustumPlanes[static_cast<int>(FrustumPlane::Left)].x = viewProj[0][3] + viewProj[0][0];
-    m_FrustumPlanes[static_cast<int>(FrustumPlane::Left)].y = viewProj[1][3] + viewProj[1][0];
-    m_FrustumPlanes[static_cast<int>(FrustumPlane::Left)].z = viewProj[2][3] + viewProj[2][0];
-    m_FrustumPlanes[static_cast<int>(FrustumPlane::Left)].w = viewProj[3][3] + viewProj[3][0];
+    ExtractFrustumPlanes(viewProj);
+}
 
-    // Right plane
-    m_FrustumPlanes[static_cast<int>(FrustumPlane::Right)].x = viewProj[0][3] - viewProj[0][0];
-    m_FrustumPlanes[static_cast<int>(FrustumPlane::Right)].y = viewProj[1][3] - viewProj[1][0];
-    m_FrustumPlanes[static_cast<int>(FrustumPlane::Right)].z = viewProj[2][3] - viewProj[2][0];
-    m_FrustumPlanes[static_cast<int>(FrustumPlane::Right)].w = viewProj[3][3] - viewProj[3][0];
+void Camera3D::ExtractFrustumPlanes(const glm::mat4& viewProj)
+{
+    // Extrair planos usando método de Gribb/Hartmann
+    // Mais robusto que o método anterior
 
-    // Bottom plane
-    m_FrustumPlanes[static_cast<int>(FrustumPlane::Bottom)].x = viewProj[0][3] + viewProj[0][1];
-    m_FrustumPlanes[static_cast<int>(FrustumPlane::Bottom)].y = viewProj[1][3] + viewProj[1][1];
-    m_FrustumPlanes[static_cast<int>(FrustumPlane::Bottom)].z = viewProj[2][3] + viewProj[2][1];
-    m_FrustumPlanes[static_cast<int>(FrustumPlane::Bottom)].w = viewProj[3][3] + viewProj[3][1];
+    // Left plane: add 4th column to 1st column
+    m_FrustumPlanes[0] = glm::vec4(
+        viewProj[0][3] + viewProj[0][0],
+        viewProj[1][3] + viewProj[1][0],
+        viewProj[2][3] + viewProj[2][0],
+        viewProj[3][3] + viewProj[3][0]
+    );
 
-    // Top plane
-    m_FrustumPlanes[static_cast<int>(FrustumPlane::Top)].x = viewProj[0][3] - viewProj[0][1];
-    m_FrustumPlanes[static_cast<int>(FrustumPlane::Top)].y = viewProj[1][3] - viewProj[1][1];
-    m_FrustumPlanes[static_cast<int>(FrustumPlane::Top)].z = viewProj[2][3] - viewProj[2][1];
-    m_FrustumPlanes[static_cast<int>(FrustumPlane::Top)].w = viewProj[3][3] - viewProj[3][1];
+    // Right plane: subtract 1st column from 4th column
+    m_FrustumPlanes[1] = glm::vec4(
+        viewProj[0][3] - viewProj[0][0],
+        viewProj[1][3] - viewProj[1][0],
+        viewProj[2][3] - viewProj[2][0],
+        viewProj[3][3] - viewProj[3][0]
+    );
 
-    // Near plane
-    m_FrustumPlanes[static_cast<int>(FrustumPlane::Near)].x = viewProj[0][3] + viewProj[0][2];
-    m_FrustumPlanes[static_cast<int>(FrustumPlane::Near)].y = viewProj[1][3] + viewProj[1][2];
-    m_FrustumPlanes[static_cast<int>(FrustumPlane::Near)].z = viewProj[2][3] + viewProj[2][2];
-    m_FrustumPlanes[static_cast<int>(FrustumPlane::Near)].w = viewProj[3][3] + viewProj[3][2];
+    // Bottom plane: add 4th column to 2nd column
+    m_FrustumPlanes[2] = glm::vec4(
+        viewProj[0][3] + viewProj[0][1],
+        viewProj[1][3] + viewProj[1][1],
+        viewProj[2][3] + viewProj[2][1],
+        viewProj[3][3] + viewProj[3][1]
+    );
 
-    // Far plane
-    m_FrustumPlanes[static_cast<int>(FrustumPlane::Far)].x = viewProj[0][3] - viewProj[0][2];
-    m_FrustumPlanes[static_cast<int>(FrustumPlane::Far)].y = viewProj[1][3] - viewProj[1][2];
-    m_FrustumPlanes[static_cast<int>(FrustumPlane::Far)].z = viewProj[2][3] - viewProj[2][2];
-    m_FrustumPlanes[static_cast<int>(FrustumPlane::Far)].w = viewProj[3][3] - viewProj[3][2];
+    // Top plane: subtract 2nd column from 4th column
+    m_FrustumPlanes[3] = glm::vec4(
+        viewProj[0][3] - viewProj[0][1],
+        viewProj[1][3] - viewProj[1][1],
+        viewProj[2][3] - viewProj[2][1],
+        viewProj[3][3] - viewProj[3][1]
+    );
 
-    // Normalize all planes
+    // Near plane: add 4th column to 3rd column
+    m_FrustumPlanes[4] = glm::vec4(
+        viewProj[0][3] + viewProj[0][2],
+        viewProj[1][3] + viewProj[1][2],
+        viewProj[2][3] + viewProj[2][2],
+        viewProj[3][3] + viewProj[3][2]
+    );
+
+    // Far plane: subtract 3rd column from 4th column
+    m_FrustumPlanes[5] = glm::vec4(
+        viewProj[0][3] - viewProj[0][2],
+        viewProj[1][3] - viewProj[1][2],
+        viewProj[2][3] - viewProj[2][2],
+        viewProj[3][3] - viewProj[3][2]
+    );
+
     for (auto& plane : m_FrustumPlanes)
     {
-        float length = glm::sqrt(plane.x * plane.x + plane.y * plane.y + plane.z * plane.z);
-        plane /= length;
+        float length = glm::length(glm::vec3(plane));
+        if (length > 0.0001f) { // Evitar divisão por zero
+            plane /= length;
+        }
     }
 }
 
-bool Camera3D::PointInFrustum(const glm::vec3& point) const
+    bool Camera3D::PointInFrustum(const glm::vec3& point) const
 {
     // Check if the point is inside all frustum planes
     for (const auto& plane : m_FrustumPlanes)
     {
-        if (glm::dot(glm::vec3(plane), point) + plane.w < 0.0f)
+        float distance = glm::dot(glm::vec3(plane), point) + plane.w;
+        if (distance < 0.0f)
             return false;
     }
-
     return true;
 }
 
@@ -138,23 +158,55 @@ bool Camera3D::SphereInFrustum(const glm::vec3& center, float radius) const
 
 bool Camera3D::AABBInFrustum(const glm::vec3& min, const glm::vec3& max) const
 {
-    // Check if the AABB is completely outside any frustum plane
     for (const auto& plane : m_FrustumPlanes)
     {
-        glm::vec3 p;
-        glm::vec3 n = glm::vec3(plane);
+        glm::vec3 normal = glm::vec3(plane);
 
-        // Find the positive vertex (P-vertex)
-        p.x = (n.x >= 0.0f) ? max.x : min.x;
-        p.y = (n.y >= 0.0f) ? max.y : min.y;
-        p.z = (n.z >= 0.0f) ? max.z : min.z;
+        // Find the positive vertex (P-vertex) - farthest point in direction of normal
+        glm::vec3 positiveVertex;
+        positiveVertex.x = (normal.x >= 0.0f) ? max.x : min.x;
+        positiveVertex.y = (normal.y >= 0.0f) ? max.y : min.y;
+        positiveVertex.z = (normal.z >= 0.0f) ? max.z : min.z;
 
         // If the positive vertex is outside, the entire AABB is outside
-        if (glm::dot(n, p) + plane.w < 0.0f)
+        if (glm::dot(normal, positiveVertex) + plane.w < 0.0f)
             return false;
     }
-
     return true;
+}
+
+void Camera3D::DebugFrustum() const
+{
+    FENGINE_CORE_INFO("=== FRUSTUM DEBUG ===");
+    FENGINE_CORE_INFO("Camera Position: ({:.2f}, {:.2f}, {:.2f})",
+                     camera_pos_.x, camera_pos_.y, camera_pos_.z);
+    FENGINE_CORE_INFO("Camera Front: ({:.2f}, {:.2f}, {:.2f})",
+                     camera_front_.x, camera_front_.y, camera_front_.z);
+
+    const char* planeNames[] = {"Left", "Right", "Bottom", "Top", "Near", "Far"};
+    for (int i = 0; i < 6; i++) {
+        const auto& plane = m_FrustumPlanes[i];
+        FENGINE_CORE_INFO("{} Plane: ({:.3f}, {:.3f}, {:.3f}, {:.3f})",
+                         planeNames[i], plane.x, plane.y, plane.z, plane.w);
+    }
+}
+
+bool Camera3D::TestSphereAtPosition(const glm::vec3& center, float radius) const
+{
+    bool result = SphereInFrustum(center, radius);
+    FENGINE_CORE_INFO("Testing sphere at ({:.2f}, {:.2f}, {:.2f}) radius {:.2f}: {}",
+                     center.x, center.y, center.z, radius, result ? "VISIBLE" : "CULLED");
+
+    // Debug: mostrar distância para cada plano
+    for (int i = 0; i < 6; i++) {
+        const auto& plane = m_FrustumPlanes[i];
+        float distance = glm::dot(glm::vec3(plane), center) + plane.w;
+        const char* planeNames[] = {"Left", "Right", "Bottom", "Top", "Near", "Far"};
+        FENGINE_CORE_INFO("  {} plane distance: {:.2f} (radius: {:.2f})",
+                         planeNames[i], distance, radius);
+    }
+
+    return result;
 }
 
 void Camera3D::SetPosition(const glm::vec3& position)

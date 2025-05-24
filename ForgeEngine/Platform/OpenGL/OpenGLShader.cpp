@@ -106,10 +106,10 @@ OpenGLShader::OpenGLShader(const std::string& filepath) : m_FilePath(filepath) {
       return;
     }
   } catch (const std::exception& e) {
-    FENGINE_CORE_WARN("Direct compilation failed: {}", e.what());
+    FENGINE_CORE_CRITICAL("Direct compilation failed: {}", e.what());
   }
 
-  // Fallback para método SPIR-V original
+  // Fallback para metodo SPIR-V original
   FENGINE_CORE_WARN("Falling back to SPIR-V compilation");
 
   {
@@ -145,7 +145,6 @@ OpenGLShader::OpenGLShader(const std::string& name,
 
 OpenGLShader::~OpenGLShader() {
   FENGINE_PROFILE_FUNCTION();
-
   glDeleteProgram(m_RendererID);
 }
 

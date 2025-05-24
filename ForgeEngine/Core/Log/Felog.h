@@ -20,7 +20,7 @@ namespace ForgeEngine {
     static std::shared_ptr<spdlog::logger> s_ClientLogger;
   };
 }
-//#define DEBUG
+#define DEBUG
 #ifdef DEBUG
 
 #define FENGINE_CORE_TRACE(...)    ::ForgeEngine::Felog::GetCoreLogger()->trace(__VA_ARGS__)
