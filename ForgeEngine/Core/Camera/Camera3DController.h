@@ -79,6 +79,7 @@ private:
     ControlMode m_ControlMode = ControlMode::Orbit;
     bool m_MouseControlEnabled = true;
     bool m_MouseButtonPressed = false;
+    float mouse_sensitivity_ = 0.1f;
     
     // Camera parameters
     float m_AspectRatio = 1.33f;
@@ -93,7 +94,7 @@ private:
     
     // Movement settings
     float m_MovementSpeed = 5.0f;
-    float m_RotationSpeed = 0.1f;  // Degrees per pixel for mouse movement
+    float m_RotationSpeed = 0.01f;  // Degrees per pixel for mouse movement
     float m_ZoomSpeed = 1.0f;
     
     // Key states for smooth movement

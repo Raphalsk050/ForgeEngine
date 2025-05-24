@@ -11,6 +11,9 @@
 #include "Core/Renderer/RenderCommand.h"
 #include "Core/Camera/Camera3D.h"
 #include "Core/Camera/Camera3DController.h"
+#include "Core/Renderer/Mesh.h"
+#include "Core/Camera/Camera3DController.h"
+
 
 namespace ForgeEngine {
     class ForgeEngine {

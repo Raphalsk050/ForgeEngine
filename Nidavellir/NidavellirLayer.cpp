@@ -26,7 +26,8 @@ namespace ForgeEngine
     void NidavellirLayer::OnAttach()
     {
         auto window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow());
-        //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        Renderer3D::EnableWireframe(false);
         Layer::OnAttach();
     }
 
@@ -45,23 +46,15 @@ namespace ForgeEngine
             RenderCommand::Clear();
         }
 
-        Renderer3D::BeginScene(camera_controller_.GetCamera());
-        // Draw a red line
-        Renderer3D::DrawLine3D({-0.5f, 0.0f, -1.0f}, {0.5f, 0.0f, -1.0f}, {1.0f, 0.0f, 0.0f, 1.0f});
-        // Draw a green cube
-        time_ += ts;
-        int amount = 64;
-        for (int i = 0; i < amount; i++)
-        {
-            for (int j = 0; j < amount; j++)
-            {
-                auto size = glm::vec3(1.0);
-                auto height = sin(i * size.y + time_) + cos(j * size.y + time_);
 
-                auto position = glm::vec3(size.x * i,height,size.z * j);
-                Renderer3D::DrawBox(position,size, {float(i)/float(amount), 1.0f, float(j)/float(amount), 1.0f});
-            }
-        }
+        Renderer3D::BeginScene(camera_controller_.GetCamera());
+        Renderer3D::SetAmbientLight({1.0f,1.0f,1.0f},10000.0f);
+        Renderer3D::DrawLine3D({-0.5f, 0.0f, 0.0f}, {0.5f, 0.0f, 0.0f}, {1.0f, 0.0f, 0.0f, 1.0f});
+        Renderer3D::DrawCube({0.0f,0.0f,0.0f},{1.0f,1.0f,1.0f},{1.0f,1.0f,1.0f,1.0f});
+        Renderer3D::DrawSphere({0.0f,0.0f,0.0f},1.0f,{1.0f,1.0f,1.0f,1.0f});
+        auto cube = Mesh::CreateCube(1.0f);
+        Renderer3D::DrawMesh(glm::vec3(0.0f), glm::vec3(1.0f),glm::vec3(0.0f), cube, glm::vec4(1.0f));
+
         Renderer3D::EndScene();
     }
 

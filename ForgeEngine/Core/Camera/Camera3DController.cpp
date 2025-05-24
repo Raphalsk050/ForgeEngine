@@ -156,9 +156,8 @@ namespace ForgeEngine
         m_LastMousePosition.x = e.GetX();
         m_LastMousePosition.y = e.GetY();
 
-        float sensitivity = 1.0f;
-        xoffset *= sensitivity;
-        yoffset *= sensitivity;
+        xoffset *= mouse_sensitivity_;
+        yoffset *= mouse_sensitivity_;
 
         m_Yaw   += xoffset;
         m_Pitch += yoffset;

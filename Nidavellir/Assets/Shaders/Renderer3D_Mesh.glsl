@@ -1,4 +1,3 @@
-// TIMESTAMP: 2025-05-10-20:55:00 - FORÇAR RECARREGAMENTO DE CACHE
 #type vertex
 #version 450 core
 

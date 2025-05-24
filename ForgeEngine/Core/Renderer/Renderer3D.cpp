@@ -126,15 +126,18 @@ namespace ForgeEngine
                                     const glm::vec3& scale,
                                     const glm::vec3& rotation)
     {
-        glm::mat4 transform = glm::translate(glm::mat4(1.0f), position);
-        transform = glm::rotate(transform, glm::radians(rotation.x),
-                                glm::vec3(1.0f, 0.0f, 0.0f));
-        transform = glm::rotate(transform, glm::radians(rotation.y),
-                                glm::vec3(0.0f, 1.0f, 0.0f));
-        transform = glm::rotate(transform, glm::radians(rotation.z),
-                                glm::vec3(0.0f, 0.0f, 1.0f));
-        transform = glm::scale(transform, scale);
-        return transform;
+        glm::mat4 transformMatrix = glm::mat4(1.0f); // Initialize to identity matrix
+
+        // Apply transformations in the order: scale, rotate, translate
+        transformMatrix = glm::translate(transformMatrix, position);
+
+        // Apply rotations (order matters: Z * Y * X)
+        transformMatrix = glm::rotate(transformMatrix, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+        transformMatrix = glm::rotate(transformMatrix, glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+        transformMatrix = glm::rotate(transformMatrix, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+
+        transformMatrix = glm::scale(transformMatrix, scale);
+        return transformMatrix;
     }
 
     void Renderer3D::Init()
@@ -155,10 +158,13 @@ namespace ForgeEngine
         if (s_Data.MeshShader == nullptr)
             FENGINE_CORE_CRITICAL("Mesh shader not found");
 
+        // Create wireframe and line shaders with similar fallbacks...
+        // [Similar fallback logic for other shaders]
+
+        // Rest of initialization...
         // Create line rendering resources
         s_Data.LineVertexArray = VertexArray::Create();
-        s_Data.LineVertexBuffer =
-            VertexBuffer::Create(Renderer3DData::MaxVertices * sizeof(LineVertex3D));
+        s_Data.LineVertexBuffer = VertexBuffer::Create(Renderer3DData::MaxVertices * sizeof(LineVertex3D));
         s_Data.LineVertexBuffer->SetLayout({
             {ShaderDataType::Float3, "a_Position"},
             {ShaderDataType::Float4, "a_Color"},
@@ -171,12 +177,20 @@ namespace ForgeEngine
         s_Data.WhiteTexture = Texture2D::Create(TextureSpecification());
         uint32_t whiteTextureData = 0xffffffff;
         s_Data.WhiteTexture->SetData(&whiteTextureData, sizeof(uint32_t));
-
-        // Set first texture slot to the white texture
         s_Data.TextureSlots[0] = s_Data.WhiteTexture;
 
-        // Create primitive meshes
-        PreparePrimitives();
+        // Create primitive meshes - CORRIGIDO
+        s_Data.CubeMesh = Mesh::CreateCube(1.0f);
+        s_Data.SphereMesh = Mesh::CreateSphere(0.5f, 16, 16);
+
+        // Log para debug
+        FENGINE_CORE_INFO("Primitive meshes created:");
+        FENGINE_CORE_INFO("  Cube: {} vertices, {} indices",
+                          s_Data.CubeMesh->GetVertexCount(),
+                          s_Data.CubeMesh->GetIndexCount());
+        FENGINE_CORE_INFO("  Sphere: {} vertices, {} indices",
+                          s_Data.SphereMesh->GetVertexCount(),
+                          s_Data.SphereMesh->GetIndexCount());
 
         // Create default material
         s_Data.DefaultMaterial = CreateRef<Material>();
@@ -185,18 +199,17 @@ namespace ForgeEngine
         s_Data.DefaultMaterial->SetMetallic(0.0f);
 
         // Create uniform buffers
-        s_Data.CameraUniformBuffer =
-            UniformBuffer::Create(sizeof(Renderer3DData::CameraData), 0);
-        s_Data.LightUniformBuffer =
-            UniformBuffer::Create(sizeof(Renderer3DData::LightData), 1);
+        s_Data.CameraUniformBuffer = UniformBuffer::Create(sizeof(Renderer3DData::CameraData), 0);
+        s_Data.LightUniformBuffer = UniformBuffer::Create(sizeof(Renderer3DData::LightData), 1);
 
         // Set default lighting data
         s_Data.LightBuffer.PointLightPosition = s_Data.PointLightPosition;
         s_Data.LightBuffer.PointLightIntensity = 1.0f;
         s_Data.LightBuffer.AmbientLightColor = s_Data.AmbientLightColor;
         s_Data.LightBuffer.AmbientLightIntensity = s_Data.AmbientLightIntensity;
-        s_Data.LightUniformBuffer->SetData(&s_Data.LightBuffer,
-                                           sizeof(Renderer3DData::LightData));
+        s_Data.LightUniformBuffer->SetData(&s_Data.LightBuffer, sizeof(Renderer3DData::LightData));
+
+        FENGINE_CORE_INFO("Renderer3D initialized successfully");
     }
 
     void Renderer3D::Shutdown()
@@ -279,29 +292,29 @@ namespace ForgeEngine
 
     bool Renderer3D::IsPointVisible(const glm::vec3& point)
     {
-        // Use the currently active camera's frustum culling
-        if (s_Data.ActiveCamera)
-        {
-            return s_Data.ActiveCamera->PointInFrustum(point);
-        }
+        // // Use the currently active camera's frustum culling
+        // if (s_Data.ActiveCamera)
+        // {
+        //     return s_Data.ActiveCamera->PointInFrustum(point);
+        // }
         return true; // If no camera is active, consider everything visible
     }
 
     bool Renderer3D::IsSphereVisible(const glm::vec3& center, float radius)
     {
-        if (s_Data.ActiveCamera)
-        {
-            return s_Data.ActiveCamera->SphereInFrustum(center, radius);
-        }
+        // if (s_Data.ActiveCamera)
+        // {
+        //     return s_Data.ActiveCamera->SphereInFrustum(center, radius);
+        // }
         return true;
     }
 
     bool Renderer3D::IsAABBVisible(const glm::vec3& min, const glm::vec3& max)
     {
-        if (s_Data.ActiveCamera)
-        {
-            return s_Data.ActiveCamera->AABBInFrustum(min, max);
-        }
+        // if (s_Data.ActiveCamera)
+        // {
+        //     return s_Data.ActiveCamera->AABBInFrustum(min, max);
+        // }
         return true;
     }
 
@@ -365,10 +378,10 @@ namespace ForgeEngine
         // Cube vertices and indices would be created here
         // This is a simplified version - in a real engine, you would create proper
         // mesh data
-        s_Data.CubeMesh = CreateRef<Mesh>();
+        s_Data.CubeMesh = Mesh::CreateCube();
 
         // Same for sphere
-        s_Data.SphereMesh = CreateRef<Mesh>();
+        s_Data.SphereMesh = Mesh::CreateSphere();
     }
 
     void Renderer3D::DrawMesh(const glm::mat4& transform, Ref<Mesh> mesh,
@@ -392,13 +405,13 @@ namespace ForgeEngine
 
             s_Data.TotalMeshCount++;
 
-            // Perform frustum culling
-            if (!IsEntityVisible(entityID, transform,
-                                 cullingData.BoundingSphereRadius))
-            {
-                cullingData.WasVisible = false;
-                return; // Skip rendering this mesh
-            }
+            // // Perform frustum culling
+            // if (!IsEntityVisible(entityID, transform,
+            //                      cullingData.BoundingSphereRadius))
+            // {
+            //     cullingData.WasVisible = false;
+            //     return; // Skip rendering this mesh
+            // }
 
             cullingData.WasVisible = true;
             s_Data.VisibleMeshCount++;
@@ -431,13 +444,13 @@ namespace ForgeEngine
 
             s_Data.TotalMeshCount++;
 
-            // Perform frustum culling
-            if (!IsEntityVisible(entityID, transform,
-                                 cullingData.BoundingSphereRadius))
-            {
-                cullingData.WasVisible = false;
-                return; // Skip rendering this mesh
-            }
+            // // Perform frustum culling
+            // if (!IsEntityVisible(entityID, transform,
+            //                      cullingData.BoundingSphereRadius))
+            // {
+            //     cullingData.WasVisible = false;
+            //     return; // Skip rendering this mesh
+            // }
 
             cullingData.WasVisible = true;
             s_Data.VisibleMeshCount++;
@@ -517,8 +530,7 @@ namespace ForgeEngine
     void Renderer3D::DrawCube(const glm::vec3& position, const glm::vec3& size,
                               const glm::vec4& color, int entityID)
     {
-        glm::mat4 transform = glm::translate(glm::mat4(1.0f), position) *
-            glm::scale(glm::mat4(1.0f), size);
+        glm::mat4 transform = CreateTransformMatrix(position, size, glm::vec4(0.0, 0.0, 0.0, 1.0));
 
         DrawCube(transform, color, entityID);
     }
@@ -535,12 +547,18 @@ namespace ForgeEngine
     void Renderer3D::DrawCube(const glm::mat4& transform, const glm::vec4& color,
                               int entityID)
     {
+        if (s_Data.CubeMesh.get()->GetIndexCount() == 0)
+            FENGINE_CORE_CRITICAL("Renderer3D indexCount = {}", s_Data.CubeMesh.get()->GetIndexCount());
+
         DrawMesh(transform, s_Data.CubeMesh, color, entityID);
     }
 
     void Renderer3D::DrawCube(const glm::mat4& transform, Ref<Material> material,
                               int entityID)
     {
+        if (s_Data.CubeMesh.get()->GetIndexCount() == 0)
+            FENGINE_CORE_CRITICAL("Renderer3D indexCount = {}", s_Data.CubeMesh.get()->GetIndexCount());
+
         DrawMesh(transform, s_Data.CubeMesh, material, entityID);
     }
 
