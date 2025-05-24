@@ -224,6 +224,7 @@ namespace ForgeEngine
     {
         m_AspectRatio = width / height;
         m_Camera.SetViewport(width, height);
+        m_Camera.SetPerspective(90.0f, m_AspectRatio, 0.1f, 1000.0f);
     }
 
     void Camera3DController::SetPosition(const glm::vec3& position)

@@ -25,10 +25,11 @@ namespace ForgeEngine
 
     void NidavellirLayer::OnAttach()
     {
+        Layer::OnAttach();
         auto window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow());
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        glEnable(GL_DEPTH_TEST);
         Renderer3D::EnableWireframe(false);
-        Layer::OnAttach();
     }
 
     void NidavellirLayer::OnDetach()
@@ -39,21 +40,25 @@ namespace ForgeEngine
     void NidavellirLayer::OnUpdate(Timestep ts)
     {
         camera_controller_.OnUpdate(ts);
-
+        time_ += ts;
         Renderer3D::ResetStats();
         {
             RenderCommand::SetClearColor({0.2f, 0.2f, 0.2f, 1});
             RenderCommand::Clear();
         }
 
-
         Renderer3D::BeginScene(camera_controller_.GetCamera());
-        Renderer3D::SetAmbientLight({1.0f,1.0f,1.0f},10000.0f);
-        Renderer3D::DrawLine3D({-0.5f, 0.0f, 0.0f}, {0.5f, 0.0f, 0.0f}, {1.0f, 0.0f, 0.0f, 1.0f});
-        Renderer3D::DrawCube({0.0f,0.0f,0.0f},{1.0f,1.0f,1.0f},{1.0f,1.0f,1.0f,1.0f});
-        Renderer3D::DrawSphere({0.0f,0.0f,0.0f},1.0f,{1.0f,1.0f,1.0f,1.0f});
-        auto cube = Mesh::CreateCube(1.0f);
-        Renderer3D::DrawMesh(glm::vec3(0.0f), glm::vec3(1.0f),glm::vec3(0.0f), cube, glm::vec4(1.0f));
+        auto x = sin(time_);
+        auto z = cos(time_);
+        auto position = glm::vec3(x,0.0f,z);
+        //Renderer3D::SetAmbientLight(glm::vec4(x,0.0f,z,1.0f), 10.0);
+        Renderer3D::SetPointLightPosition(position);
+
+        // Renderer3D::DrawLine3D(position, {0.5f, 0.0f, 0.0f}, {1.0f, 0.0f, 0.0f, 1.0f});
+        Renderer3D::DrawSphere(glm::vec3(0.0f), 1.0f, glm::vec4(1.0));
+        Renderer3D::DrawSphere(position, 0.1f, glm::vec4(1.0));
+        // Renderer3D::DrawSphere(glm::vec3(0.0f), 10.0f, glm::vec4(1.0));
+        // Renderer3D::DrawCube(glm::vec3(0.0f),glm::vec3(1.0f),glm::vec4(1.0));
 
         Renderer3D::EndScene();
     }

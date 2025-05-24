@@ -1,4 +1,3 @@
-// TIMESTAMP: 2025-05-10-20:55:00 - FORÇAR RECARREGAMENTO DE CACHE
 #type vertex
 #version 450 core
 
@@ -14,7 +13,6 @@ layout(std140, binding = 0) uniform Camera
     vec3 u_CameraPosition;
 };
 
-// Movendo o uniforme para um bloco uniforme adequado
 layout(std140, binding = 2) uniform Transform
 {
     mat4 u_Transform;

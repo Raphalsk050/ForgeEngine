@@ -86,9 +86,9 @@ namespace ForgeEngine
         Ref<Texture2D> WhiteTexture;
 
         // Lighting data
-        glm::vec3 PointLightPosition = {0.0f, 3.0f, 0.0f};
+        glm::vec3 PointLightPosition = {1.0f, 1.0f, 0.0f};
         glm::vec3 AmbientLightColor = {1.0f, 1.0f, 1.0f};
-        float AmbientLightIntensity = 0.1f;
+        float AmbientLightIntensity = 0.0f;
 
         // Settings
         bool WireframeMode = false;
@@ -98,6 +98,7 @@ namespace ForgeEngine
         {
             glm::mat4 ViewProjection;
             glm::vec3 CameraPosition;
+            float _padding1;
         };
 
         CameraData CameraBuffer{};

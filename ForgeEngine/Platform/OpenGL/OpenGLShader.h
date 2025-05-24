@@ -55,6 +55,7 @@ namespace ForgeEngine
         void CompileOrGetOpenGLBinaries();
         void CreateProgram();
         void Reflect(GLenum stage, const std::vector<uint32_t>& shaderData);
+        void CreateDirectOpenGLProgram(const std::unordered_map<GLenum, std::string>& shaderSources);
 
     private:
         uint32_t m_RendererID;

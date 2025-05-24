@@ -88,20 +88,43 @@ OpenGLShader::OpenGLShader(const std::string& filepath) : m_FilePath(filepath) {
   std::string source = ReadFile(filepath);
   auto shaderSources = PreProcess(source);
 
+  // TENTAR COMPILAÇÃO DIRETA PRIMEIRO
+  FENGINE_CORE_INFO("Attempting direct OpenGL compilation for: {}", filepath);
+
+  try {
+    CreateDirectOpenGLProgram(shaderSources);
+
+    if (m_RendererID != 0) {
+      FENGINE_CORE_INFO("Direct compilation successful!");
+
+      // Extract name from filepath
+      auto lastSlash = filepath.find_last_of("/\\");
+      lastSlash = lastSlash == std::string::npos ? 0 : lastSlash + 1;
+      auto lastDot = filepath.rfind('.');
+      auto count = lastDot == std::string::npos ? filepath.size() - lastSlash : lastDot - lastSlash;
+      m_Name = filepath.substr(lastSlash, count);
+      return;
+    }
+  } catch (const std::exception& e) {
+    FENGINE_CORE_WARN("Direct compilation failed: {}", e.what());
+  }
+
+  // Fallback para método SPIR-V original
+  FENGINE_CORE_WARN("Falling back to SPIR-V compilation");
+
   {
     Time timer;
     CompileOrGetVulkanBinaries(shaderSources);
     CompileOrGetOpenGLBinaries();
     CreateProgram();
-    FENGINE_CORE_WARN("Shader creation took {0} ms", timer.ElapsedMillis());
+    FENGINE_CORE_WARN("SPIR-V shader creation took {0} ms", timer.ElapsedMillis());
   }
 
   // Extract name from filepath
   auto lastSlash = filepath.find_last_of("/\\");
   lastSlash = lastSlash == std::string::npos ? 0 : lastSlash + 1;
   auto lastDot = filepath.rfind('.');
-  auto count = lastDot == std::string::npos ? filepath.size() - lastSlash
-                                            : lastDot - lastSlash;
+  auto count = lastDot == std::string::npos ? filepath.size() - lastSlash : lastDot - lastSlash;
   m_Name = filepath.substr(lastSlash, count);
 }
 
@@ -551,6 +574,97 @@ void OpenGLShader::Reflect(GLenum stage, const std::vector<uint32_t>& shaderData
   } catch (...) {
     FENGINE_CORE_ERROR("Unknown exception in shader reflection");
   }
+}
+
+void OpenGLShader::CreateDirectOpenGLProgram(const std::unordered_map<GLenum, std::string>& shaderSources)
+{
+  FENGINE_CORE_INFO("Creating OpenGL program directly from GLSL source");
+
+    GLuint program = glCreateProgram();
+    if (program == 0) {
+        FENGINE_CORE_ERROR("Failed to create OpenGL program");
+        return;
+    }
+
+    std::vector<GLuint> shaderIDs;
+
+    for (auto&& [stage, source] : shaderSources) {
+        FENGINE_CORE_INFO("Compiling direct shader stage: {0}", Utils::GLShaderStageToString(stage));
+
+        GLuint shaderID = glCreateShader(stage);
+        if (shaderID == 0) {
+            FENGINE_CORE_ERROR("Failed to create shader object for stage: {0}", Utils::GLShaderStageToString(stage));
+            continue;
+        }
+
+        const char* sourceCStr = source.c_str();
+        glShaderSource(shaderID, 1, &sourceCStr, nullptr);
+        glCompileShader(shaderID);
+
+        // Check compilation
+        GLint isCompiled = 0;
+        glGetShaderiv(shaderID, GL_COMPILE_STATUS, &isCompiled);
+        if (isCompiled == GL_FALSE) {
+            GLint maxLength = 0;
+            glGetShaderiv(shaderID, GL_INFO_LOG_LENGTH, &maxLength);
+
+            if (maxLength > 0) {
+                std::vector<GLchar> infoLog(maxLength);
+                glGetShaderInfoLog(shaderID, maxLength, &maxLength, infoLog.data());
+                FENGINE_CORE_ERROR("Direct GLSL compilation failed for {0}:\n{1}",
+                                  Utils::GLShaderStageToString(stage), infoLog.data());
+
+                // Log também o código fonte para debug
+                FENGINE_CORE_ERROR("Shader source that failed:\n{0}", source);
+            }
+
+            glDeleteShader(shaderID);
+            continue;
+        }
+
+        FENGINE_CORE_INFO("Successfully compiled direct {0}", Utils::GLShaderStageToString(stage));
+        shaderIDs.push_back(shaderID);
+        glAttachShader(program, shaderID);
+    }
+
+    if (shaderIDs.empty()) {
+        FENGINE_CORE_ERROR("No shaders compiled successfully in direct mode");
+        glDeleteProgram(program);
+        return;
+    }
+
+    // Link program
+    FENGINE_CORE_INFO("Linking direct shader program");
+    glLinkProgram(program);
+
+    GLint isLinked;
+    glGetProgramiv(program, GL_LINK_STATUS, &isLinked);
+    if (isLinked == GL_FALSE) {
+        GLint maxLength = 0;
+        glGetProgramiv(program, GL_INFO_LOG_LENGTH, &maxLength);
+
+        if (maxLength > 0) {
+            std::vector<GLchar> infoLog(maxLength);
+            glGetProgramInfoLog(program, maxLength, &maxLength, infoLog.data());
+            FENGINE_CORE_ERROR("Direct shader linking failed:\n{0}", infoLog.data());
+        }
+
+        glDeleteProgram(program);
+        for (auto id : shaderIDs) {
+            glDeleteShader(id);
+        }
+        return;
+    }
+
+    FENGINE_CORE_INFO("Direct shader program linked successfully");
+
+    // Clean up individual shaders
+    for (auto id : shaderIDs) {
+        glDetachShader(program, id);
+        glDeleteShader(id);
+    }
+
+    m_RendererID = program;
 }
 
 void OpenGLShader::Bind() const {
