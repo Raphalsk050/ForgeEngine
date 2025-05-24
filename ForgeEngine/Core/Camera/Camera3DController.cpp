@@ -12,7 +12,7 @@ namespace ForgeEngine
     Camera3DController::Camera3DController(float aspectRatio, ControlMode mode)
         : m_AspectRatio(aspectRatio), m_ControlMode(mode)
     {
-        m_Camera = Camera3D(90.0f, aspectRatio, 0.1f, 1000.0f);
+        m_Camera = Camera3D(60.0f, aspectRatio, 0.1f, 1000.0f);
         m_Camera.SetPosition({0.0f, 2.0f, 5.0f});
     }
 

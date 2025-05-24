@@ -27,7 +27,7 @@ void Camera3D::SetPerspective(float fov, float aspectRatio, float nearClip, floa
     m_AspectRatio = aspectRatio;
     m_NearClip = nearClip;
     m_FarClip = farClip;
-    m_Projection = glm::perspective(glm::radians(fov), aspectRatio, nearClip, farClip);
+    m_Projection = glm::perspective(glm::radians(m_FOV), m_AspectRatio, m_NearClip, m_FarClip);
     RecalculateFrustum();
 }
 
@@ -43,6 +43,11 @@ void Camera3D::SetViewport(float width, float height)
 void Camera3D::SetCameraForwardDirection(glm::vec3 direction)
 {
     camera_front_ = direction;
+}
+
+void Camera3D::SetFov(float fov)
+{
+    SetPerspective(fov, m_AspectRatio, m_NearClip, m_FarClip);
 }
 
 void Camera3D::RecalculateViewMatrix()

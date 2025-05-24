@@ -25,7 +25,8 @@ public:
     void SetPerspective(float fov, float aspectRatio, float nearClip, float farClip);
     void SetViewport(float width, float height);
     void SetCameraForwardDirection(glm::vec3 direction);
-    
+    void SetFov(float fov);
+
     // Updates the view matrix and frustum planes
     void RecalculateViewMatrix();
     void RecalculateFrustum();

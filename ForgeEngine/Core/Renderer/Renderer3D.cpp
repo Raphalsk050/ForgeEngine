@@ -293,36 +293,36 @@ namespace ForgeEngine
 
     bool Renderer3D::IsPointVisible(const glm::vec3& point)
     {
-        // // Use the currently active camera's frustum culling
-        // if (s_Data.ActiveCamera)
-        // {
-        //     return s_Data.ActiveCamera->PointInFrustum(point);
-        // }
+        // Use the currently active camera's frustum culling
+        if (s_Data.ActiveCamera)
+        {
+            return s_Data.ActiveCamera->PointInFrustum(point);
+        }
         return true; // If no camera is active, consider everything visible
     }
 
     bool Renderer3D::IsSphereVisible(const glm::vec3& center, float radius)
     {
-        // if (s_Data.ActiveCamera)
-        // {
-        //     return s_Data.ActiveCamera->SphereInFrustum(center, radius);
-        // }
+        if (s_Data.ActiveCamera)
+        {
+            return s_Data.ActiveCamera->SphereInFrustum(center, radius);
+        }
         return true;
     }
 
     bool Renderer3D::IsAABBVisible(const glm::vec3& min, const glm::vec3& max)
     {
-        // if (s_Data.ActiveCamera)
-        // {
-        //     return s_Data.ActiveCamera->AABBInFrustum(min, max);
-        // }
+        if (s_Data.ActiveCamera)
+        {
+            return s_Data.ActiveCamera->AABBInFrustum(min, max);
+        }
         return true;
     }
 
     bool Renderer3D::IsEntityVisible(int entityID, const glm::mat4& transform,
                                      float boundingSphereRadius)
     {
-        return true;
+        //return true;
         // Extract position from transform matrix
         glm::vec3 position(transform[3][0], transform[3][1], transform[3][2]);
 
@@ -406,13 +406,13 @@ namespace ForgeEngine
 
             s_Data.TotalMeshCount++;
 
-            // // Perform frustum culling
-            // if (!IsEntityVisible(entityID, transform,
-            //                      cullingData.BoundingSphereRadius))
-            // {
-            //     cullingData.WasVisible = false;
-            //     return; // Skip rendering this mesh
-            // }
+            // Perform frustum culling
+            if (!IsEntityVisible(entityID, transform,
+                                 cullingData.BoundingSphereRadius))
+            {
+                cullingData.WasVisible = false;
+                return; // Skip rendering this mesh
+            }
 
             cullingData.WasVisible = true;
             s_Data.VisibleMeshCount++;
@@ -445,13 +445,13 @@ namespace ForgeEngine
 
             s_Data.TotalMeshCount++;
 
-            // // Perform frustum culling
-            // if (!IsEntityVisible(entityID, transform,
-            //                      cullingData.BoundingSphereRadius))
-            // {
-            //     cullingData.WasVisible = false;
-            //     return; // Skip rendering this mesh
-            // }
+            // Perform frustum culling
+            if (!IsEntityVisible(entityID, transform,
+                                 cullingData.BoundingSphereRadius))
+            {
+                cullingData.WasVisible = false;
+                return; // Skip rendering this mesh
+            }
 
             cullingData.WasVisible = true;
             s_Data.VisibleMeshCount++;
