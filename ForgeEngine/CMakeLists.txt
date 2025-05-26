@@ -142,7 +142,7 @@ else()
 endif()
 
 if(EXISTS ${shaderc_DIR}/CMakeLists.txt)
-    add_subdirectory(${shaderc_DIR})
+    #add_subdirectory(${shaderc_DIR})
 else()
     message(WARNING "Shaderc not found at ${shaderc_DIR}")
 endif()

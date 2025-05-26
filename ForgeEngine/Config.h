@@ -1,7 +1,6 @@
 #pragma once
 #include <memory>
 
-
 #ifdef DEBUG
 #if defined(FENGINE_PLATFORM_WINDOWS)
     #define FENGINE_DEBUGBREAK() __debugbreak()
@@ -14,7 +13,6 @@
 #else
 #error "Platform doesn't support debugbreak yet!"
 #endif
-#define FENGINE_ENABLE_ASSERTS
 
 #else
 #define FENGINE_DEBUGBREAK()

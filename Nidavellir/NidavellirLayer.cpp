@@ -13,7 +13,8 @@
 #include "gtc/type_ptr.hpp"
 #include "Platform/OpenGL/OpenGLBuffer.h"
 #include "Platform/OpenGL/OpenGLShader.h"
-#define FENGINE_DEBUG_FRUSTUM
+//#define FENGINE_DEBUG_FRUSTUM
+//#define FENGINE_CULLING_DEBUG
 
 namespace ForgeEngine
 {
@@ -83,6 +84,7 @@ namespace ForgeEngine
         Renderer3D::DrawSphere(position, 0.2f, glm::vec4(1.0), 0);
         Renderer3D::DrawMesh(glm::vec3(0.0f,-2.0,0.0),glm::vec3(100.0f),glm::vec3(0.0f),Mesh::CreatePlane(),glm::vec4(1.0), 1);
 
+        EarlyDepthTestManager::DebugDepthBuffer();
 
         int amount = 4;
         glEnable(GL_DEPTH_TEST);

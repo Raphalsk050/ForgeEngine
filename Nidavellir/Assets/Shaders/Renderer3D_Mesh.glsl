@@ -34,17 +34,13 @@ layout(location = 2) out vec2 v_TexCoord;
 
 void main()
 {
-    // Calcular posição mundial
     vec4 worldPos = u_Transform * vec4(a_Position, 1.0);
     v_WorldPos = worldPos.xyz;
 
-    // Transformar normal
     v_Normal = mat3(transpose(inverse(u_Transform))) * a_Normal;
 
-    // Passar coordenadas de textura
     v_TexCoord = a_TexCoord;
 
-    // Posição final da tela
     gl_Position = u_ViewProjection * worldPos;
 }
 

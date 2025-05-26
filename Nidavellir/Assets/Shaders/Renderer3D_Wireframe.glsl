@@ -35,10 +35,7 @@ layout(location = 1) out int o_EntityID;
 layout(location = 0) in flat int v_EntityID;
 
 // Material uniform buffer
-layout(std140, binding = 3) uniform Material
-{
-    vec4 u_Color;
-};
+uniform vec4 u_Color;
 
 void main()
 {

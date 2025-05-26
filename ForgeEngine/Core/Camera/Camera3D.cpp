@@ -177,6 +177,7 @@ bool Camera3D::AABBInFrustum(const glm::vec3& min, const glm::vec3& max) const
 
 void Camera3D::DebugFrustum() const
 {
+#ifdef FENGINE_DEBUG_FRUSTUM
     FENGINE_CORE_INFO("=== FRUSTUM DEBUG ===");
     FENGINE_CORE_INFO("Camera Position: ({:.2f}, {:.2f}, {:.2f})",
                      camera_pos_.x, camera_pos_.y, camera_pos_.z);
@@ -189,6 +190,7 @@ void Camera3D::DebugFrustum() const
         FENGINE_CORE_INFO("{} Plane: ({:.3f}, {:.3f}, {:.3f}, {:.3f})",
                          planeNames[i], plane.x, plane.y, plane.z, plane.w);
     }
+#endif
 }
 
 bool Camera3D::TestSphereAtPosition(const glm::vec3& center, float radius) const

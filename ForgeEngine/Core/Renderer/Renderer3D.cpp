@@ -146,13 +146,13 @@ namespace ForgeEngine
         if (!s_Data.ActiveCamera || entityID < 0) {
             if (s_Data.ActiveCamera == nullptr)
             {
-                FENGINE_ASSERT(false, "No Active Camera!")
+                FENGINE_CORE_ASSERT(false, "No Active Camera!")
                 FENGINE_CORE_ERROR("No Active Camera!");
             }
 
             if (entityID < 0)
             {
-                FENGINE_ASSERT(false, "EntityID is invalid!")
+                FENGINE_CORE_ASSERT(false, "EntityID is invalid!")
                 FENGINE_CORE_ERROR("EntityID is invalid!");
             }
 
@@ -234,9 +234,9 @@ namespace ForgeEngine
             s_Data.MeshShader->SetFloat("u_MaterialMetallic", material->GetMetallic());
             s_Data.MeshShader->SetFloat("u_MaterialRoughness", material->GetRoughness());
             s_Data.MeshShader->SetInt("u_AlbedoMap", 0);
-            s_Data.MeshShader->SetInt("u_NormalMap", 1);
-            s_Data.MeshShader->SetInt("u_MetallicMap", 2);
-            s_Data.MeshShader->SetInt("u_RoughnessMap", 3);
+            s_Data.MeshShader->SetFloat4("u_NormalMap", glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
+            s_Data.MeshShader->SetFloat4("u_MetallicMap", glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
+            s_Data.MeshShader->SetFloat4("u_RoughnessMap", glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
             s_Data.MeshShader->SetInt("u_EntityID", entityID);
         }
 
@@ -357,7 +357,6 @@ namespace ForgeEngine
     {
         FENGINE_PROFILE_FUNCTION();
         EarlyDepthTestManager::BeginFrame();
-
         s_Data.CameraBuffer.ViewProjection = camera.GetViewProjection();
         s_Data.CameraBuffer.CameraPosition = camera.GetPosition();
         s_Data.CameraUniformBuffer->SetData(&s_Data.CameraBuffer,
@@ -432,7 +431,6 @@ namespace ForgeEngine
     {
         FENGINE_PROFILE_FUNCTION();
 
-        // ✅ CORRIGIDO: Atualizar estatísticas antes de flush
         s_Data.Stats.MeshCount = s_Data.TotalMeshCount;
         s_Data.Stats.VisibleMeshCount = s_Data.VisibleMeshCount;
         s_Data.Stats.CulledMeshCount = s_Data.TotalMeshCount - s_Data.VisibleMeshCount;
@@ -446,7 +444,6 @@ namespace ForgeEngine
         s_Data.LineVertexBufferPtr = s_Data.LineVertexBufferBase;
         s_Data.TextureSlotIndex = 1;
 
-        // ✅ CORRIGIDO: Reset dos contadores de culling
         s_Data.VisibleMeshCount = 0;
         s_Data.TotalMeshCount = 0;
     }
@@ -487,15 +484,11 @@ namespace ForgeEngine
         s_Data.SphereMesh = Mesh::CreateSphere();
     }
 
-    // ============================================================================
-    // DRAWMESH CORRIGIDO - VERSÃO COM COR
-    // ============================================================================
     void Renderer3D::DrawMesh(const glm::mat4& transform, Ref<Mesh> mesh,
                               const glm::vec4& color, int entityID)
     {
         FENGINE_PROFILE_FUNCTION();
 
-        // ✅ CORRIGIDO: Culling centralizado
         if (!PerformCulling(entityID, transform)) {
             return; // Objeto foi cortado pelo frustum culling
         }
@@ -739,9 +732,6 @@ namespace ForgeEngine
         s_Data.Stats.CulledMeshCount = 0;
         s_Data.Stats.VertexCount = 0;
         s_Data.Stats.IndexCount = 0;
-
-        // Note: VisibleMeshCount e TotalMeshCount são resetados em StartBatch()
-        // não aqui, porque eles precisam ser acumulados durante o frame
     }
 
     Renderer3D::Statistics Renderer3D::GetStats()
@@ -754,6 +744,7 @@ namespace ForgeEngine
     // ============================================================================
     void Renderer3D::DebugCulling()
     {
+#ifdef FENGINE_CULLING_DEBUG
         FENGINE_CORE_INFO("=== CULLING DEBUG ===");
         FENGINE_CORE_INFO("Total meshes: {}", s_Data.TotalMeshCount);
         FENGINE_CORE_INFO("Visible meshes: {}", s_Data.VisibleMeshCount);
@@ -774,6 +765,7 @@ namespace ForgeEngine
                              entityID, cullingData.BoundingSphereRadius,
                              cullingData.WasVisible ? "YES" : "NO");
         }
+#endif
     }
 
     // ============================================================================

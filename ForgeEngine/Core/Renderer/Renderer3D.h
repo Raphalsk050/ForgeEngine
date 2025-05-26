@@ -17,9 +17,7 @@ namespace ForgeEngine
     class EarlyDepthTestManager
     {
     public:
-        // ========================================================================
-        // CONFIGURAÇÃO INICIAL DO EARLY Z
-        // ========================================================================
+
         static void Initialize()
         {
             glEnable(GL_DEPTH_TEST);
@@ -27,6 +25,10 @@ namespace ForgeEngine
             glDepthFunc(GL_LESS);
 
             glDepthMask(GL_TRUE);
+
+            glEnable(GL_CULL_FACE);
+
+            glCullFace(GL_FRONT);
 
             glDepthRange(0.0, 1.0);
 
