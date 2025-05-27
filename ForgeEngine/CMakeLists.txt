@@ -220,6 +220,7 @@ target_include_directories(ForgeInput PUBLIC ${glm_DIR})
 # ===========================================
 forge_add_library(ForgeEvent
         Core/Event/Event.h
+        Core/Event/Event.cpp
         Core/Event/KeyEvent.h
         Core/Event/MouseEvent.h
         Core/Event/WindowApplicationEvent.h
@@ -504,6 +505,13 @@ target_link_libraries(ForgeEngine INTERFACE
 )
 
 target_sources(ForgeEngine INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/ForgeEngine.h)
+
+
+add_custom_command(TARGET ForgeApplication POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/ForgeEngine/Assets/Shaders
+        $<TARGET_FILE_DIR:ForgeApplication>/Assets/Shaders
+)
 
 # ===========================================
 # BUILD CONFIGURATION OUTPUT

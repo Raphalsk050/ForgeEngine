@@ -254,15 +254,16 @@ namespace ForgeEngine
         FENGINE_PROFILE_FUNCTION();
         EarlyDepthTestManager::Initialize();
 
+        FENGINE_CORE_CRITICAL("Current Directory: {}",std::filesystem::current_path().string());
         // Create shaders
         s_Data.MeshShader = Shader::Create(
-            "C:/_PROJECTS/ForgeEngine/Nidavellir/Assets/Shaders/"
+            "../ForgeEngine/Assets/Shaders/"
             "Renderer3D_Mesh.glsl");
         s_Data.WireframeShader = Shader::Create(
-            "C:/_PROJECTS/ForgeEngine/Nidavellir/Assets/Shaders/"
+            "../ForgeEngine/Assets/Shaders/"
             "Renderer3D_Wireframe.glsl");
         s_Data.LineShader = Shader::Create(
-            "C:/_PROJECTS/ForgeEngine/Nidavellir/Assets/Shaders/"
+            "../ForgeEngine/Assets/Shaders/"
             "Renderer3D_Line.glsl");
 
         if (s_Data.MeshShader == nullptr)

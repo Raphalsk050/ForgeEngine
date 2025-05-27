@@ -17,15 +17,15 @@ namespace ForgeEngine {
 
 }
 
+
 namespace std {
-    template <typename T> struct hash;
 
     template<>
     struct hash<ForgeEngine::UUID>
     {
-        std::size_t operator()(const ForgeEngine::UUID& uuid) const
+        std::size_t operator()(const ForgeEngine::UUID& uuid) const noexcept
         {
-            return (uint64_t)uuid;
+            return static_cast<uint64_t>(uuid);
         }
     };
 
