@@ -12,6 +12,12 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
+
+# ===========================================
+# OPENGL SYSTEM LIBRARIES
+# ===========================================
+find_package(OpenGL REQUIRED)
+
 # Enable compilation cache if available
 if(NOT DEFINED CMAKE_CXX_COMPILER_LAUNCHER)
     find_program(CCACHE_FOUND ccache)
@@ -245,6 +251,8 @@ target_link_libraries(ForgeWindow
         ForgeEvent
         glfw
         glad  # Added for OpenGL functionality
+        ${OPENGL_LIBRARIES}
+        ${CMAKE_DL_LIBS}
 )
 target_include_directories(ForgeWindow
         PUBLIC
@@ -352,6 +360,8 @@ target_link_libraries(ForgeOpenGL
         PUBLIC
         ForgeRenderer
         glad
+        ${OPENGL_LIBRARIES}
+        ${CMAKE_DL_LIBS}
 )
 target_include_directories(ForgeOpenGL
         PUBLIC
@@ -419,6 +429,10 @@ forge_add_library(ForgeImGui
         Core/Imgui/ImguiLayer.cpp  # Ensure correct case for filename
 )
 
+target_compile_definitions(ImGui PRIVATE
+        IMGUI_IMPL_OPENGL_LOADER_GLAD
+)
+
 target_link_libraries(ForgeImGui
         PUBLIC
         ForgeLayer
@@ -439,6 +453,14 @@ set_target_properties(ForgeImGui PROPERTIES UNITY_BUILD OFF)
 target_include_directories(ImGui PUBLIC
         ${glad_DIR}/include
         ${glfw_DIR}/include
+)
+
+target_link_libraries(ImGui
+        PUBLIC
+        glfw
+        glad
+        ${OPENGL_LIBRARIES}
+        ${CMAKE_DL_LIBS}
 )
 
 target_include_directories(ImGuizmo PUBLIC
@@ -473,7 +495,7 @@ forge_add_library(ForgeUtilities
 )
 
 target_link_libraries(ForgeUtilities
-    spdlog
+        spdlog
 )
 
 target_include_directories(ForgeUtilities
