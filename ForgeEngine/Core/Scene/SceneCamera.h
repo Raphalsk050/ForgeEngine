@@ -1,5 +1,5 @@
 #pragma once
-#include "Core/Camera/camera.h"
+#include "Core/Camera/Camera.h"
 
 namespace ForgeEngine {
 

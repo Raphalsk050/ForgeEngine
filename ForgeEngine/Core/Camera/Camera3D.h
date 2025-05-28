@@ -2,7 +2,7 @@
 
 // Enable GLM experimental features before including GLM headers
 #define GLM_ENABLE_EXPERIMENTAL
-#include "Core/Camera/camera.h"
+#include "Core/Camera/Camera.h"
 #include <array>
 
 namespace ForgeEngine {
