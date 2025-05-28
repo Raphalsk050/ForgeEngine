@@ -364,7 +364,7 @@ set_target_properties(ForgeOpenGL PROPERTIES UNITY_BUILD OFF)
 # CAMERA LIBRARY - Camera system
 # ===========================================
 forge_add_library(ForgeCamera
-        Core/Camera/camera.h
+        Core/Camera/Camera.h
         Core/Camera/Camera3D.h
         Core/Camera/Camera3D.cpp
         Core/Camera/Camera3DController.h
