@@ -1,6 +1,6 @@
 #include "GraphicsContext.h"
 #include "FEPCH.h"
-#include "renderer.h"
+#include "Renderer.h"
 #include "Platform/OpenGL/OpenGLContext.h"
 
 namespace ForgeEngine {

@@ -1,5 +1,5 @@
 #include "Buffer.h"
-#include "renderer.h"
+#include "Renderer.h"
 #include "Platform/OpenGL/OpenGLBuffer.h"
 
 namespace ForgeEngine {
