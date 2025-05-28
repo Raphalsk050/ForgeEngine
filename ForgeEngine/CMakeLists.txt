@@ -398,8 +398,8 @@ target_link_libraries(ForgeScene
 # LAYER LIBRARY - Layer system
 # ===========================================
 forge_add_library(ForgeLayer
-        Core/Layer/layer.h
-        Core/Layer/layer.cpp
+        Core/Layer/Layer.h
+        Core/Layer/Layer.cpp
         Core/Layer/LayerStack.h
         Core/Layer/LayerStack.cpp
 )
