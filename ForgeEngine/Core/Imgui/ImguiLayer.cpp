@@ -9,7 +9,7 @@
 #include <imgui_internal.h>
 
 #include "FEPCH.h"
-#include "../application/application.h"
+#include "Core/Application/Application.h"
 
 // TEMPORARY
 #include <GLFW/glfw3.h>
