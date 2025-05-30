@@ -319,7 +319,8 @@ void main()
                 {
                     glEnableVertexAttribArray(index + i);
                     glVertexAttribPointer(index + i, 4, GL_FLOAT, GL_FALSE,
-                                        4 * vec4Size, (void*)(i * vec4Size));
+                                        layout.GetStride(),                    // Stride correto: tamanho total da estrutura
+                                        (void*)(element.Offset + i * vec4Size)); // Offset correto: offset do elemento + deslocamento do vec4
                     glVertexAttribDivisor(index + i, 1);
                 }
                 index += 4;
@@ -328,7 +329,7 @@ void main()
             {
                 glEnableVertexAttribArray(index);
                 glVertexAttribPointer(index, 4, GL_FLOAT, GL_FALSE,
-                                    layout.GetStride(), (void*)element.Offset);
+                                    layout.GetStride(), (void*)element.Offset); // Já estava correto
                 glVertexAttribDivisor(index, 1);
                 index++;
             }
