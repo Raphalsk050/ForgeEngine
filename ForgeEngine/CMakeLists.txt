@@ -308,6 +308,8 @@ forge_add_library(ForgeRenderer
         Core/Renderer/Mesh.cpp
         Core/Renderer/TestMesh.cpp
         Core/Renderer/TestMesh.h
+        Core/Renderer/InstancedRenderer.h
+        Core/Renderer/InstancedRenderer.cpp
 )
 
 set(FORGE_SHADER_LIBS "")

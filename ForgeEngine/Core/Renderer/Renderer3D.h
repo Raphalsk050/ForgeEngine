@@ -14,90 +14,59 @@
 
 namespace ForgeEngine
 {
+    // Forward declaration do InstancedRenderer existente
+    class InstancedRenderer;
+
     class EarlyDepthTestManager
     {
     public:
-
         static void Initialize()
         {
             glEnable(GL_DEPTH_TEST);
-
             glDepthFunc(GL_LESS);
-
             glDepthMask(GL_TRUE);
-
             glEnable(GL_CULL_FACE);
-
             glCullFace(GL_FRONT);
-
             glDepthRange(0.0, 1.0);
-
             glClearDepth(1.0);
-
             FENGINE_CORE_INFO("Early Depth Test initialized");
         }
 
-        // ========================================================================
-        // CONFIGURAÇÃO POR FRAME
-        // ========================================================================
         static void BeginFrame()
         {
-            // Limpar depth buffer no início do frame
             glClear(GL_DEPTH_BUFFER_BIT);
-
-            // Garantir que depth test está habilitado
             glEnable(GL_DEPTH_TEST);
             glDepthMask(GL_TRUE);
         }
 
-        // ========================================================================
-        // RENDERIZAÇÃO EM DUAS PASSADAS (OPCIONAL - MÁXIMA EFICIÊNCIA)
-        // ========================================================================
         static void BeginDepthPrePass()
         {
-            // PRIMEIRA PASSADA: Só escrever depth, sem fragment shader complexo
-
-            // Desabilitar escrita de cor
             glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
-
-            // Habilitar escrita de depth
             glDepthMask(GL_TRUE);
             glDepthFunc(GL_LESS);
-
             FENGINE_CORE_TRACE("Starting depth pre-pass");
         }
 
         static void EndDepthPrePass()
         {
-            // Re-habilitar escrita de cor
             glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-
             FENGINE_CORE_TRACE("Depth pre-pass complete");
         }
 
         static void BeginColorPass()
         {
-            // SEGUNDA PASSADA: Renderizar cor com depth test, mas sem escrever depth
-
-            // Manter depth test ativo, mas não escrever
-            glDepthMask(GL_FALSE); // Não escrever depth
-            glDepthFunc(GL_LEQUAL); // Aceitar pixels com depth <= existing
-
+            glDepthMask(GL_FALSE);
+            glDepthFunc(GL_LEQUAL);
             FENGINE_CORE_TRACE("Starting color pass");
         }
 
         static void EndColorPass()
         {
-            // Restaurar configurações padrão
             glDepthMask(GL_TRUE);
             glDepthFunc(GL_LESS);
-
             FENGINE_CORE_TRACE("Color pass complete");
         }
 
-        // ========================================================================
-        // CONFIGURAÇÕES PARA DIFERENTES TIPOS DE OBJETOS
-        // ========================================================================
         static void ConfigureForOpaqueObjects()
         {
             glEnable(GL_DEPTH_TEST);
@@ -109,7 +78,7 @@ namespace ForgeEngine
         static void ConfigureForTransparentObjects()
         {
             glEnable(GL_DEPTH_TEST);
-            glDepthMask(GL_FALSE); // Transparentes não escrevem depth
+            glDepthMask(GL_FALSE);
             glDepthFunc(GL_LESS);
             glEnable(GL_BLEND);
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -119,12 +88,9 @@ namespace ForgeEngine
         {
             glEnable(GL_DEPTH_TEST);
             glDepthMask(GL_FALSE);
-            glDepthFunc(GL_LEQUAL); // Skybox sempre no fundo
+            glDepthFunc(GL_LEQUAL);
         }
 
-        // ========================================================================
-        // DEBUG E DIAGNÓSTICO
-        // ========================================================================
         static void DebugDepthBuffer()
         {
             GLboolean depthTest, depthMask;
@@ -165,7 +131,7 @@ namespace ForgeEngine
     {
     public:
         // ========================================================================
-        // ESTRUTURA DE ESTATÍSTICAS
+        // ESTRUTURA DE ESTATÍSTICAS EXPANDIDA
         // ========================================================================
         struct Statistics
         {
@@ -175,6 +141,29 @@ namespace ForgeEngine
             uint32_t CulledMeshCount = 0;
             uint32_t VertexCount = 0;
             uint32_t IndexCount = 0;
+
+            // Novas estatísticas para instancing
+            uint32_t InstancedDrawCalls = 0;
+            uint32_t IndividualDrawCalls = 0;
+            uint32_t TotalInstances = 0;
+            uint32_t InstancedObjects = 0;
+            uint32_t IndividualObjects = 0;
+            float InstancingEfficiency = 0.0f; // Porcentagem de redução de draw calls
+        };
+
+        // ========================================================================
+        // ESTRUTURAS PARA BATCHING AUTOMÁTICO
+        // ========================================================================
+        struct RenderItem
+        {
+            glm::mat4 Transform;
+            Ref<Mesh> MeshPtr;
+            Ref<Material> MaterialPtr;
+            glm::vec4 Color;
+            int EntityID;
+
+            // Para compatibilidade com diferentes tipos de renderização
+            enum class Type { Mesh, Cube, Sphere } ItemType = Type::Mesh;
         };
 
         // ========================================================================
@@ -207,17 +196,13 @@ namespace ForgeEngine
         static bool IsEntityVisible(int entityID, const glm::mat4& transform, float boundingSphereRadius);
 
         // ========================================================================
-        // RENDERIZAÇÃO DE MESHES GENÉRICAS
+        // RENDERIZAÇÃO DE MESHES GENÉRICAS (API MANTIDA INALTERADA)
         // ========================================================================
-
-        // Renderização com cor
         static void DrawMesh(const glm::mat4& transform, Ref<Mesh> mesh,
                              const glm::vec4& color, int entityID = -1);
         static void DrawMesh(const glm::vec3& position, const glm::vec3& scale,
                              const glm::vec3& rotation, Ref<Mesh> mesh,
                              const glm::vec4& color, int entityID = -1);
-
-        // Renderização com material
         static void DrawMesh(const glm::mat4& transform, Ref<Mesh> mesh,
                              Ref<Material> material, int entityID = -1);
         static void DrawMesh(const glm::vec3& position, const glm::vec3& scale,
@@ -225,7 +210,7 @@ namespace ForgeEngine
                              Ref<Material> material, int entityID = -1);
 
         // ========================================================================
-        // RENDERIZAÇÃO DE PRIMITIVAS - CUBO
+        // RENDERIZAÇÃO DE PRIMITIVAS - CUBO (API MANTIDA INALTERADA)
         // ========================================================================
         static void DrawCube(const glm::vec3& position, const glm::vec3& size,
                              const glm::vec4& color, int entityID = -1);
@@ -237,7 +222,7 @@ namespace ForgeEngine
                              int entityID = -1);
 
         // ========================================================================
-        // RENDERIZAÇÃO DE PRIMITIVAS - ESFERA
+        // RENDERIZAÇÃO DE PRIMITIVAS - ESFERA (API MANTIDA INALTERADA)
         // ========================================================================
         static void DrawSphere(const glm::vec3& position, float radius,
                                const glm::vec4& color, int entityID = -1);
@@ -249,7 +234,7 @@ namespace ForgeEngine
                                int entityID = -1);
 
         // ========================================================================
-        // RENDERIZAÇÃO DE DEBUG - LINHAS E CAIXAS
+        // RENDERIZAÇÃO DE DEBUG - LINHAS E CAIXAS (MANTIDA INALTERADA)
         // ========================================================================
         static void DrawLine3D(const glm::vec3& p0, const glm::vec3& p1,
                                const glm::vec4& color, int entityID = -1);
@@ -259,56 +244,78 @@ namespace ForgeEngine
                             int entityID = -1);
 
         // ========================================================================
-        // RENDERIZAÇÃO DE MODELOS
+        // RENDERIZAÇÃO DE MODELOS (MANTIDA INALTERADA)
         // ========================================================================
         static void DrawModel(const glm::mat4& transform, ModelRendererComponent& src,
                               int entityID = -1);
 
         // ========================================================================
-        // CONFIGURAÇÕES DE ILUMINAÇÃO
+        // CONFIGURAÇÕES DE ILUMINAÇÃO (MANTIDA INALTERADA)
         // ========================================================================
         static void SetPointLightPosition(const glm::vec3& position);
         static void SetAmbientLight(const glm::vec3& color, float intensity);
 
         // ========================================================================
-        // CONFIGURAÇÕES DE RENDERIZAÇÃO
+        // CONFIGURAÇÕES DE RENDERIZAÇÃO (MANTIDA INALTERADA)
         // ========================================================================
         static void EnableWireframe(bool enable);
         static bool IsWireframeEnabled();
 
         // ========================================================================
-        // ESTATÍSTICAS E DEBUG
+        // CONTROLE DE INSTANCING
+        // ========================================================================
+        static void SetInstancingThreshold(uint32_t threshold);
+        static uint32_t GetInstancingThreshold();
+        static void EnableAutoInstancing(bool enable);
+        static bool IsAutoInstancingEnabled();
+
+        // ========================================================================
+        // ESTATÍSTICAS E DEBUG (EXPANDIDO)
         // ========================================================================
         static void ResetStats();
         static Statistics GetStats();
 
-        // Estatísticas específicas de culling
+        // Estatísticas específicas de culling (mantidas)
         static uint32_t GetTotalMeshCount();
         static uint32_t GetVisibleMeshCount();
         static uint32_t GetCulledMeshCount();
-        static float GetCullingEfficiency(); // Retorna % de objetos cortados
+        static float GetCullingEfficiency();
+
+        // Novas estatísticas de instancing
+        static float GetInstancingEfficiency();
+        static uint32_t GetInstancedObjectCount();
+        static uint32_t GetIndividualObjectCount();
 
         // ========================================================================
-        // FUNÇÕES DE DEBUG DO CULLING
+        // FUNÇÕES DE DEBUG (EXPANDIDO)
         // ========================================================================
         static void DebugCulling();
+        static void DebugInstancing();
         static void RecalculateEntityBounds(int entityID);
         static void ClearCullingData();
 
         // ========================================================================
-        // FUNÇÕES AUXILIARES (LEGACY)
+        // FUNÇÕES AUXILIARES (LEGACY - MANTIDA)
         // ========================================================================
         static void PreparePrimitives();
 
     private:
         // ========================================================================
-        // FUNÇÕES INTERNAS
+        // FUNÇÕES INTERNAS PARA BATCHING E INSTANCING
         // ========================================================================
+        static void SubmitRenderItem(const RenderItem& item);
+        static void ProcessBatches();
+        static void RenderInstancedBatch(const std::vector<RenderItem>& items);
+        static void RenderIndividualItem(const RenderItem& item);
 
-        // Função helper para culling centralizado
+        // Helpers para agrupamento
+        static bool ShouldUseInstancing(const std::vector<RenderItem>& items);
+        static std::string GetMeshKey(Ref<Mesh> mesh);
+
+        // Função helper para culling centralizado (mantida)
         friend bool PerformCulling(int entityID, const glm::mat4& transform, float* outBoundingRadius);
 
-        // Função interna de renderização (sem culling)
+        // Função interna de renderização (modificada para usar o novo sistema)
         friend void DrawMeshInternal(const glm::mat4& transform, Ref<Mesh> mesh,
                                      Ref<Material> material, int entityID);
     };
