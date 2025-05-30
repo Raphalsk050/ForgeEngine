@@ -63,6 +63,7 @@ namespace ForgeEngine
         int grid_size_ = 4;          // Grid de cilindros (grid_size x grid_size)
         int cube_count_ = 20;        // Número de cubos orbitantes
         int sphere_count_ = 15;      // Número de esferas flutuantes
+        int max_entities_ = 1000;
 
         // ========================================================================
         // CONFIGURAÇÕES DE TESTE DE PERFORMANCE (NOVO)

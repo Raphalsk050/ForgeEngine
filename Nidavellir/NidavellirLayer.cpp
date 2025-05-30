@@ -31,7 +31,7 @@ namespace ForgeEngine
         glEnable(GL_DEPTH_TEST);
         glDepthFunc(GL_LEQUAL);
 
-        mesh_ = TestMesh::CreateCylinder();
+        mesh_ = TestMesh::CreateTriangle();
         camera_controller_.SetPosition(glm::vec3(0.0f, 0.0f, 0.0f));
         camera_controller_.SetRotation(glm::vec3(0.0f, 0.0f, 0.0f));
 
@@ -105,45 +105,17 @@ namespace ForgeEngine
         EarlyDepthTestManager::DebugDepthBuffer();
 
         // ========================================================================
-        // TESTE INTENSIVO DE INSTANCING - MUITOS OBJETOS IDÊNTICOS
-        // ========================================================================
-
-        int amount = grid_size_;
-        glEnable(GL_DEPTH_TEST);
-
-        for (int i = 0; i < amount; i++)
-        {
-            for (int j = 0; j < amount; j++)
-            {
-                auto size = glm::vec3(1.0);
-                float height = sin(i + time_) + cos(j + time_);
-
-                position = glm::vec3(size.x * i, height, size.z * j);
-
-                // Usar a mesma mesh (cilindro) para demonstrar instancing
-                glm::vec4 color = glm::vec4(
-                    abs(sin(i + time_)),
-                    abs(cos(j + time_)),
-                    abs(sin(i + j + time_)),
-                    1.0f
-                );
-
-                Renderer3D::DrawMesh(position, glm::vec3(1.0f), glm::vec3(0.0f),
-                                   mesh_, color, i * amount + j);
-            }
-        }
-
-        // ========================================================================
         // TESTE COM CUBOS PRIMITIVOS (também deve usar instancing)
         // ========================================================================
 
         for (int i = 0; i < cube_count_; i++)
         {
             float angle = (float)i / (float)cube_count_ * 2.0f * 3.14159f;
-            float radius = 10.0f;
+            int a = i % 10;
+            float radius = 10.0f + a;
             glm::vec3 cubePos = glm::vec3(
                 cos(angle + time_) * radius,
-                sin(time_ * 2.0f + i) * 2.0f,
+                1.0f,
                 sin(angle + time_) * radius
             );
 
@@ -154,7 +126,7 @@ namespace ForgeEngine
                 1.0f
             );
 
-            Renderer3D::DrawCube(cubePos, glm::vec3(0.5f), cubeColor, 1000 + i);
+            Renderer3D::DrawCube(cubePos, glm::vec3(0.5f), cubeColor, i);
         }
 
         // ========================================================================
@@ -164,11 +136,12 @@ namespace ForgeEngine
         for (int i = 0; i < sphere_count_; i++)
         {
             float angle = (float)i / (float)sphere_count_ * 2.0f * 3.14159f;
-            float radius = 15.0f;
+            int a = i % 20;
+            float radius = 3.0f + a;
             glm::vec3 spherePos = glm::vec3(
-                cos(angle - time_) * radius,
-                sin(time_ + i) * 3.0f + 5.0f,
-                sin(angle - time_) * radius
+            cos(angle + time_) * radius,
+            1.0f,
+            sin(angle + time_) * radius
             );
 
             glm::vec4 sphereColor = glm::vec4(
@@ -178,7 +151,8 @@ namespace ForgeEngine
                 1.0f
             );
 
-            float sphereRadius = 0.3f + sin(time_ + i) * 0.2f;
+            // float sphereRadius = 0.3f + sin(time_ + i) * 0.2f;
+            float sphereRadius = 0.3f;
             Renderer3D::DrawSphere(spherePos, sphereRadius, sphereColor, 2000 + i);
         }
 
@@ -226,9 +200,9 @@ namespace ForgeEngine
         // ========================================================================
         ImGui::Text("Object Density Controls");
 
-        ImGui::SliderInt("Grid Size", &grid_size_, 2, 20);
-        ImGui::SliderInt("Cube Count", &cube_count_, 0, 100);
-        ImGui::SliderInt("Sphere Count", &sphere_count_, 0, 100);
+        ImGui::SliderInt("Grid Size", &grid_size_, 2, max_entities_);
+        ImGui::SliderInt("Cube Count", &cube_count_, 0, max_entities_);
+        ImGui::SliderInt("Sphere Count", &sphere_count_, 0, max_entities_);
 
         ImGui::Text("Total Objects: %d", (grid_size_ * grid_size_) + cube_count_ + sphere_count_ + 2);
 

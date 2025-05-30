@@ -22,7 +22,6 @@ void main()
     vec4 worldPosition = u_Transform * vec4(a_Position, 1.0);
     gl_Position = u_ViewProjection * worldPosition;
 
-    // ✅ CORRIGIDO: Inicializar v_EntityID
     v_EntityID = u_EntityID;
 }
 
@@ -41,11 +40,7 @@ void main()
 {
     vec4 finalColor = u_Color;
 
-    // Se u_Color for (0,0,0,0), usar cor padrão
-    if (finalColor.a <= 0.0) {
-        finalColor = vec4(1.0, 0.0, 1.0, 1.0); // Magenta para debug
-    }
-
+    finalColor = vec4(1.0, 0.0, 1.0, 1.0);
     o_Color = finalColor;
     o_EntityID = v_EntityID;
 }
