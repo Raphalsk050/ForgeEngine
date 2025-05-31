@@ -191,6 +191,7 @@ uniform sampler2D u_AlbedoMap;
 uniform sampler2D u_NormalMap;
 uniform sampler2D u_MetallicMap;
 uniform sampler2D u_RoughnessMap;
+uniform int u_Wireframe;
 
 void main()
 {

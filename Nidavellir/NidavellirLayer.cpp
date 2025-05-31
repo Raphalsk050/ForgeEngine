@@ -54,8 +54,8 @@ namespace ForgeEngine
         debug_frame_++;
         time_ += ts;
 
-        auto x = sin(time_);
-        auto z = cos(time_);
+        auto x = sin(time_) * 10.0f;
+        auto z = cos(time_) * 10.0f;
         auto max_value = 90.0f;
         auto t = (sin(time_) + 1.0f) / 2.0f;
         auto fov = glm::mix(80.0, 90.0, glm::smoothstep(0.0f, 1.0f, t));
@@ -89,15 +89,15 @@ namespace ForgeEngine
             int a = i % 10;
             float radius = 10.0f + a;
             glm::vec3 cubePos = glm::vec3(
-                cos(angle + time_) * radius,
+                cos(angle) * radius,
                 1.0f,
-                sin(angle + time_) * radius
+                sin(angle) * radius
             );
 
             glm::vec4 cubeColor = glm::vec4(
-                abs(sin(angle + time_)),
+                abs(sin(angle)),
                 0.5f,
-                abs(cos(angle + time_)),
+                abs(cos(angle)),
                 1.0f
             );
 
@@ -111,15 +111,15 @@ namespace ForgeEngine
             int a = i % 20;
             float radius = 3.0f + a;
             glm::vec3 spherePos = glm::vec3(
-                cos(angle + time_) * radius,
+                cos(angle) * radius,
                 1.0f,
-                sin(angle + time_) * radius
+                sin(angle) * radius
             );
 
             glm::vec4 sphereColor = glm::vec4(
                 0.8f,
-                abs(sin(angle - time_)),
-                abs(cos(angle - time_)),
+                abs(sin(angle)),
+                abs(cos(angle)),
                 1.0f
             );
 
@@ -133,102 +133,16 @@ namespace ForgeEngine
 
     void NidavellirLayer::OnImGuiRender()
     {
+        RenderHelperUI();
+
+        if (render_debug_ui_enabled_)
+            RenderPerformancePanel();
+
+        if (render_debug_options_ui_enabled_)
+            RenderInstancingControlPanel();
+
         Layer::OnImGuiRender();
 
-        ImGui::Begin("Nidavellir Layer Demo");
-
-        ImGui::Text("Nidavellir Layer with Automatic Instancing");
-        ImGui::Separator();
-        ImGui::Text("Instancing Controls");
-
-        if (ImGui::Checkbox("Auto Instancing Enabled", &auto_instancing_enabled_))
-        {
-            Renderer3D::EnableAutoInstancing(auto_instancing_enabled_);
-        }
-
-        if (ImGui::SliderInt("Instancing Threshold", reinterpret_cast<int*>(&instancing_threshold_), 1, 10))
-        {
-            Renderer3D::SetInstancingThreshold(instancing_threshold_);
-        }
-
-        ImGui::Separator();
-
-        ImGui::Text("Object Density Controls");
-
-        ImGui::SliderInt("Grid Size", &grid_size_, 2, max_entities_);
-        ImGui::SliderInt("Cube Count", &cube_count_, 0, max_entities_);
-        ImGui::SliderInt("Sphere Count", &sphere_count_, 0, max_entities_);
-
-        ImGui::Text("Total Objects: %d", (grid_size_ * grid_size_) + cube_count_ + sphere_count_ + 2);
-
-        ImGui::Separator();
-
-        ImGui::Text("Controls:");
-        ImGui::BulletText("Space: Toggle Wireframe");
-        ImGui::BulletText("I: Toggle Auto Instancing");
-        ImGui::BulletText("ESC: Exit Application");
-
-        ImGui::End();
-
-        ImGui::Begin("Rendering Statistics");
-
-        auto stats = Renderer3D::GetStats();
-
-        // General statistics
-        ImGui::Text("=== General Stats ===");
-        ImGui::Text("Total Draw Calls: %d", stats.DrawCalls);
-        ImGui::Text("Vertex Count: %d", stats.VertexCount);
-        ImGui::Text("Index Count: %d", stats.IndexCount);
-        ImGui::Text("Mesh Count: %d", stats.MeshCount);
-
-        ImGui::Separator();
-
-        // Culling statistics
-        ImGui::Text("=== Culling Stats ===");
-        ImGui::Text("Total Meshes: %d", Renderer3D::GetTotalMeshCount());
-        ImGui::Text("Visible Meshes: %d", stats.VisibleMeshCount);
-        ImGui::Text("Culled Meshes: %d", stats.CulledMeshCount);
-        ImGui::Text("Culling Efficiency: %.2f%%", Renderer3D::GetCullingEfficiency());
-
-        ImGui::Separator();
-
-        ImGui::Text("=== Instancing Stats ===");
-        ImGui::Text("Instanced Draw Calls: %d", stats.InstancedDrawCalls);
-        ImGui::Text("Individual Draw Calls: %d", stats.IndividualDrawCalls);
-        ImGui::Text("Total Instances: %d", stats.TotalInstances);
-        ImGui::Text("Instanced Objects: %d", stats.InstancedObjects);
-        ImGui::Text("Individual Objects: %d", stats.IndividualObjects);
-        ImGui::Text("Instancing Efficiency: %.2f%%", stats.InstancingEfficiency);
-
-        ImGui::Separator();
-
-        // performance analysis
-        uint32_t totalObjects = stats.InstancedObjects + stats.IndividualObjects;
-        uint32_t totalDrawCalls = stats.InstancedDrawCalls + stats.IndividualDrawCalls;
-        uint32_t drawCallsWithoutInstancing = totalObjects;
-
-        ImGui::Text("=== Performance Analysis ===");
-        ImGui::Text("Objects Rendered: %d", totalObjects);
-        ImGui::Text("Actual Draw Calls: %d", totalDrawCalls);
-        ImGui::Text("Draw Calls Without Instancing: %d", drawCallsWithoutInstancing);
-
-        if (drawCallsWithoutInstancing > 0)
-        {
-            float reduction = (float)(drawCallsWithoutInstancing - totalDrawCalls) / (float)drawCallsWithoutInstancing * 100.0f;
-            ImGui::Text("Draw Call Reduction: %.2f%%", reduction);
-
-            // Colorir baseado na eficiência
-            if (reduction > 50.0f)
-                ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "Excellent Performance!");
-            else if (reduction > 25.0f)
-                ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Good Performance");
-            else if (reduction > 0.0f)
-                ImGui::TextColored(ImVec4(1.0f, 0.5f, 0.0f, 1.0f), "Some Improvement");
-            else
-                ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "No Instancing Used");
-        }
-
-        ImGui::End();
 
         if (debug_frame_ % 120 == 0)
         {
@@ -314,6 +228,137 @@ namespace ForgeEngine
 
 
         return false;
+    }
+
+    void NidavellirLayer::RenderPerformancePanel()
+    {
+        ImGui::Begin("Rendering Statistics");
+
+        auto stats = Renderer3D::GetStats();
+
+        // General statistics
+        ImGui::Text("=== General Stats ===");
+        ImGui::Text("Total Draw Calls: %d", stats.DrawCalls);
+        ImGui::Text("Vertex Count: %d", stats.VertexCount);
+        ImGui::Text("Index Count: %d", stats.IndexCount);
+        ImGui::Text("Mesh Count: %d", stats.MeshCount);
+
+        ImGui::Separator();
+
+        // Culling statistics
+        ImGui::Text("=== Culling Stats ===");
+        ImGui::Text("Total Meshes: %d", Renderer3D::GetTotalMeshCount());
+        ImGui::Text("Visible Meshes: %d", stats.VisibleMeshCount);
+        ImGui::Text("Culled Meshes: %d", stats.CulledMeshCount);
+        ImGui::Text("Culling Efficiency: %.2f%%", Renderer3D::GetCullingEfficiency());
+
+        ImGui::Separator();
+
+        ImGui::Text("=== Instancing Stats ===");
+        ImGui::Text("Instanced Draw Calls: %d", stats.InstancedDrawCalls);
+        ImGui::Text("Individual Draw Calls: %d", stats.IndividualDrawCalls);
+        ImGui::Text("Total Instances: %d", stats.TotalInstances);
+        ImGui::Text("Instanced Objects: %d", stats.InstancedObjects);
+        ImGui::Text("Individual Objects: %d", stats.IndividualObjects);
+        ImGui::Text("Instancing Efficiency: %.2f%%", stats.InstancingEfficiency);
+
+        ImGui::Separator();
+
+        // performance analysis
+        uint32_t totalObjects = stats.InstancedObjects + stats.IndividualObjects;
+        uint32_t totalDrawCalls = stats.InstancedDrawCalls + stats.IndividualDrawCalls;
+        uint32_t drawCallsWithoutInstancing = totalObjects;
+
+        ImGui::Text("=== Performance Analysis ===");
+        ImGui::Text("Objects Rendered: %d", totalObjects);
+        ImGui::Text("Actual Draw Calls: %d", totalDrawCalls);
+        ImGui::Text("Draw Calls Without Instancing: %d", drawCallsWithoutInstancing);
+
+        if (drawCallsWithoutInstancing > 0)
+        {
+            float reduction = (float)(drawCallsWithoutInstancing - totalDrawCalls) / (float)drawCallsWithoutInstancing * 100.0f;
+            ImGui::Text("Draw Call Reduction: %.2f%%", reduction);
+
+            // Colorir baseado na eficiência
+            if (reduction > 50.0f)
+                ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "Excellent Performance!");
+            else if (reduction > 25.0f)
+                ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Good Performance");
+            else if (reduction > 0.0f)
+                ImGui::TextColored(ImVec4(1.0f, 0.5f, 0.0f, 1.0f), "Some Improvement");
+            else
+                ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "No Instancing Used");
+        }
+
+        ImGui::End();
+    }
+
+    void NidavellirLayer::RenderInstancingControlPanel()
+    {
+        ImGui::Begin("Nidavellir Layer Demo");
+
+        ImGui::Text("Nidavellir Layer with Automatic Instancing");
+        ImGui::Separator();
+        ImGui::Text("Instancing Controls");
+
+        if (ImGui::Checkbox("Auto Instancing Enabled", &auto_instancing_enabled_))
+        {
+            Renderer3D::EnableAutoInstancing(auto_instancing_enabled_);
+        }
+
+        if (ImGui::SliderInt("Instancing Threshold", reinterpret_cast<int*>(&instancing_threshold_), 1, 10))
+        {
+            Renderer3D::SetInstancingThreshold(instancing_threshold_);
+        }
+
+        ImGui::Separator();
+
+        ImGui::Text("Object Density Controls");
+
+        ImGui::SliderInt("Grid Size", &grid_size_, 2, max_entities_);
+        ImGui::SliderInt("Cube Count", &cube_count_, 0, max_entities_);
+        ImGui::SliderInt("Sphere Count", &sphere_count_, 0, max_entities_);
+
+        ImGui::Text("Total Objects: %d", (grid_size_ * grid_size_) + cube_count_ + sphere_count_ + 2);
+
+        ImGui::Separator();
+
+        ImGui::Text("Controls:");
+        ImGui::BulletText("Space: Toggle Wireframe");
+        ImGui::BulletText("I: Toggle Auto Instancing");
+        ImGui::BulletText("ESC: Exit Application");
+
+        ImGui::End();
+
+    }
+
+    void NidavellirLayer::RenderHelperUI()
+    {
+        ImGui::Begin("Helper UI");
+
+        ImGui::Separator();
+        ImGui::Text("Render Options");
+        if (ImGui::Button("Enable WireFrame", {200,25}))
+        {
+            wireframe_enabled_ = !wireframe_enabled_;
+        }
+        ImGui::Separator();
+        ImGui::Separator();
+
+        ImGui::Text("Debug Options");
+        if (ImGui::Button("Enable Render statics", {200,25}))
+        {
+            render_debug_ui_enabled_ = !render_debug_ui_enabled_;
+        }
+
+        if (ImGui::Button("Enable Render debug options", {200,25}))
+        {
+            render_debug_options_ui_enabled_ = !render_debug_options_ui_enabled_;
+        }
+
+        ImGui::Separator();
+
+        ImGui::End();
     }
 
     void NidavellirLayer::OnEvent(Event& event)

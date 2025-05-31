@@ -35,9 +35,13 @@ namespace ForgeEngine
         float time_ = 0.0f;
         float previous_clicked_time_ = 0.0f;
         float new_color_[4] = {};
-        bool wireframe_enabled_ = false;
         bool camera_movement_enabled_ = true;
         std::unordered_map<KeyCode, bool> last_key_state_map_;
+
+        // debug controls
+        bool wireframe_enabled_ = false;
+        bool render_debug_ui_enabled_ = false;
+        bool render_debug_options_ui_enabled_ = false;
 
         Ref<Mesh> mesh_;
 
@@ -110,23 +114,10 @@ namespace ForgeEngine
             }
         } frame_metrics_;
 
-
-        // Métodos para configuração de instancing
-        void UpdateInstancingSettings();
-        void RenderPerformanceTests(float deltaTime);
-        void RenderObjectGrid(int grid_size, const glm::vec3& center, float spacing);
-        void RenderOrbitingObjects(int count, float radius, float height_variation);
-        void RenderFloatingObjects(int count, float radius_min, float radius_max);
-
-        // Métodos para métricas
         void UpdatePerformanceMetrics(float deltaTime);
         void RenderPerformancePanel();
         void RenderInstancingControlPanel();
         void RenderObjectDensityPanel();
-
-        // Métodos para debug e testing
-        void ToggleStressTest();
-        void ResetToDefaultSettings();
-        void SavePerformanceSnapshot();
+        void RenderHelperUI();
     };
 }
