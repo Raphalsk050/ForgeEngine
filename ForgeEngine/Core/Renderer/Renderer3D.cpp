@@ -33,14 +33,16 @@ namespace ForgeEngine {
         static constexpr uint32_t MaxTextureSlots = 32;
 
         // Instancing configuration
-        uint32_t InstancingThreshold = 3; // Minimum objects to enable instancing
+        uint32_t InstancingThreshold
+                = 3; // Minimum objects to enable instancing
         bool AutoInstancingEnabled = true;
 
         // Collection of render items for batching
         std::vector<Renderer3D::RenderItem> RenderQueue;
 
         // Mapping mesh -> items for efficient batching
-        std::unordered_map<std::string, std::vector<Renderer3D::RenderItem>> MeshBatches;
+        std::unordered_map<std::string, std::vector<Renderer3D::RenderItem>>
+                MeshBatches;
 
         // Reference to the InstancedRenderer
         std::unique_ptr<InstancedRenderer> InstanceRenderer;
@@ -125,22 +127,28 @@ namespace ForgeEngine {
 
     static Renderer3DData s_Data;
 
-    // Creates a transform matrix from position, scale and Euler rotation (XYZ order)
+    // Creates a transform matrix from position, scale and Euler rotation (XYZ
+    // order)
     glm::mat4 CreateTransformMatrix(const glm::vec3& position,
                                     const glm::vec3& scale,
                                     const glm::vec3& rotation)
     {
         glm::mat4 transformMatrix = glm::mat4(1.0f);
         transformMatrix = glm::translate(transformMatrix, position);
-        transformMatrix = glm::rotate(transformMatrix, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
-        transformMatrix = glm::rotate(transformMatrix, glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-        transformMatrix = glm::rotate(transformMatrix, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+        transformMatrix = glm::rotate(transformMatrix, glm::radians(rotation.z),
+                                      glm::vec3(0.0f, 0.0f, 1.0f));
+        transformMatrix = glm::rotate(transformMatrix, glm::radians(rotation.y),
+                                      glm::vec3(0.0f, 1.0f, 0.0f));
+        transformMatrix = glm::rotate(transformMatrix, glm::radians(rotation.x),
+                                      glm::vec3(1.0f, 0.0f, 0.0f));
         transformMatrix = glm::scale(transformMatrix, scale);
         return transformMatrix;
     }
 
-    // Performs frustum culling for an entity based on its transform and bounding sphere
-    bool PerformCulling(int entityID, const glm::mat4& transform, float* outBoundingRadius = nullptr)
+    // Performs frustum culling for an entity based on its transform and
+    // bounding sphere
+    bool PerformCulling(int entityID, const glm::mat4& transform,
+                        float* outBoundingRadius = nullptr)
     {
         if (!s_Data.ActiveCamera || entityID < 0) {
             if (s_Data.ActiveCamera == nullptr) {
@@ -163,17 +171,20 @@ namespace ForgeEngine {
             scale.y = glm::length(glm::vec3(transform[1]));
             scale.z = glm::length(glm::vec3(transform[2]));
             float maxScale = glm::max(glm::max(scale.x, scale.y), scale.z);
-            cullingData.BoundingSphereRadius = maxScale * 0.866f; // ~sqrt(3)/2 for a cube
+            cullingData.BoundingSphereRadius
+                    = maxScale * 0.866f; // ~sqrt(3)/2 for a cube
         }
 
         s_Data.TotalMeshCount++;
 
-        bool isVisible = Renderer3D::IsEntityVisible(entityID, transform, cullingData.BoundingSphereRadius);
+        bool isVisible = Renderer3D::IsEntityVisible(
+                entityID, transform, cullingData.BoundingSphereRadius);
 
         if (isVisible) {
             s_Data.VisibleMeshCount++;
             cullingData.WasVisible = true;
-        } else {
+        }
+        else {
             cullingData.WasVisible = false;
         }
 
@@ -185,7 +196,8 @@ namespace ForgeEngine {
     }
 
     // Internal function to handle mesh/material binding and draw call
-    void DrawMeshInternal(const glm::mat4& transform, Ref<Mesh> mesh, Ref<Material> material, int entityID)
+    void DrawMeshInternal(const glm::mat4& transform, Ref<Mesh> mesh,
+                          Ref<Material> material, int entityID)
     {
         // Bind material textures, fallback to white texture if missing
         if (material->GetAlbedoMap())
@@ -213,25 +225,34 @@ namespace ForgeEngine {
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
             s_Data.WireframeShader->Bind();
             s_Data.WireframeShader->SetMat4("u_Transform", transform);
-            s_Data.WireframeShader->SetFloat4("u_Color", material->GetAlbedoColor());
+            s_Data.WireframeShader->SetFloat4("u_Color",
+                                              material->GetAlbedoColor());
             s_Data.WireframeShader->SetInt("u_EntityID", entityID);
-        } else {
+        }
+        else {
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
             s_Data.MeshShader->Bind();
             s_Data.MeshShader->SetMat4("u_Transform", transform);
-            s_Data.MeshShader->SetFloat4("u_MaterialAlbedoColor", material->GetAlbedoColor());
-            s_Data.MeshShader->SetFloat("u_MaterialMetallic", material->GetMetallic());
-            s_Data.MeshShader->SetFloat("u_MaterialRoughness", material->GetRoughness());
+            s_Data.MeshShader->SetFloat4("u_MaterialAlbedoColor",
+                                         material->GetAlbedoColor());
+            s_Data.MeshShader->SetFloat("u_MaterialMetallic",
+                                        material->GetMetallic());
+            s_Data.MeshShader->SetFloat("u_MaterialRoughness",
+                                        material->GetRoughness());
             s_Data.MeshShader->SetInt("u_AlbedoMap", 0);
-            s_Data.MeshShader->SetFloat4("u_NormalMap", glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
-            s_Data.MeshShader->SetFloat4("u_MetallicMap", glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
-            s_Data.MeshShader->SetFloat4("u_RoughnessMap", glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
+            s_Data.MeshShader->SetFloat4("u_NormalMap",
+                                         glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
+            s_Data.MeshShader->SetFloat4("u_MetallicMap",
+                                         glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
+            s_Data.MeshShader->SetFloat4("u_RoughnessMap",
+                                         glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
             s_Data.MeshShader->SetInt("u_EntityID", entityID);
         }
 
         // Bind VAO and issue draw call
         mesh->GetVertexArray()->Bind();
-        RenderCommand::DrawIndexed(mesh->GetVertexArray(), mesh->GetIndexCount());
+        RenderCommand::DrawIndexed(mesh->GetVertexArray(),
+                                   mesh->GetIndexCount());
 
         s_Data.Stats.DrawCalls++;
         s_Data.Stats.IndividualDrawCalls++;
@@ -651,14 +672,21 @@ namespace ForgeEngine {
     {
         glm::vec3 halfSize = size * 0.5f;
 
-        glm::vec3 p0 = position + glm::vec3(-halfSize.x, -halfSize.y, -halfSize.z);
-        glm::vec3 p1 = position + glm::vec3(halfSize.x, -halfSize.y, -halfSize.z);
-        glm::vec3 p2 = position + glm::vec3(halfSize.x, -halfSize.y, halfSize.z);
-        glm::vec3 p3 = position + glm::vec3(-halfSize.x, -halfSize.y, halfSize.z);
-        glm::vec3 p4 = position + glm::vec3(-halfSize.x, halfSize.y, -halfSize.z);
-        glm::vec3 p5 = position + glm::vec3(halfSize.x, halfSize.y, -halfSize.z);
+        glm::vec3 p0
+                = position + glm::vec3(-halfSize.x, -halfSize.y, -halfSize.z);
+        glm::vec3 p1
+                = position + glm::vec3(halfSize.x, -halfSize.y, -halfSize.z);
+        glm::vec3 p2
+                = position + glm::vec3(halfSize.x, -halfSize.y, halfSize.z);
+        glm::vec3 p3
+                = position + glm::vec3(-halfSize.x, -halfSize.y, halfSize.z);
+        glm::vec3 p4
+                = position + glm::vec3(-halfSize.x, halfSize.y, -halfSize.z);
+        glm::vec3 p5
+                = position + glm::vec3(halfSize.x, halfSize.y, -halfSize.z);
         glm::vec3 p6 = position + glm::vec3(halfSize.x, halfSize.y, halfSize.z);
-        glm::vec3 p7 = position + glm::vec3(-halfSize.x, halfSize.y, halfSize.z);
+        glm::vec3 p7
+                = position + glm::vec3(-halfSize.x, halfSize.y, halfSize.z);
 
         // Bottom face
         DrawLine3D(p0, p1, color, entityID);
