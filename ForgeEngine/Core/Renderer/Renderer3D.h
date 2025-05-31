@@ -10,11 +10,13 @@
 #include "glad/glad.h"
 #include <glm.hpp>
 
-namespace ForgeEngine {
+namespace ForgeEngine
+{
     // Forward declaration do InstancedRenderer existente
     class InstancedRenderer;
 
-    class EarlyDepthTestManager {
+    class EarlyDepthTestManager
+    {
     public:
         static void Initialize()
         {
@@ -98,6 +100,7 @@ namespace ForgeEngine {
             glGetIntegerv(GL_DEPTH_FUNC, &depthFunc);
             glGetFloatv(GL_DEPTH_RANGE, depthRange);
 
+#ifdef FENGINE_SHADER_DEBUG
             FENGINE_CORE_INFO("=== DEPTH BUFFER STATUS ===");
             FENGINE_CORE_INFO("Depth Test: {}",
                               depthTest ? "ENABLED" : "DISABLED");
@@ -106,12 +109,14 @@ namespace ForgeEngine {
             FENGINE_CORE_INFO("Depth Func: {}", GetDepthFuncName(depthFunc));
             FENGINE_CORE_INFO("Depth Range: [{:.3f}, {:.3f}]", depthRange[0],
                               depthRange[1]);
+#endif
         }
 
     private:
         static const char* GetDepthFuncName(GLint func)
         {
-            switch (func) {
+            switch (func)
+            {
             case GL_NEVER:
                 return "NEVER";
             case GL_LESS:
@@ -134,9 +139,11 @@ namespace ForgeEngine {
         }
     };
 
-    class Renderer3D {
+    class Renderer3D
+    {
     public:
-        struct Statistics {
+        struct Statistics
+        {
             uint32_t DrawCalls = 0;
             uint32_t MeshCount = 0;
             uint32_t VisibleMeshCount = 0;
@@ -151,10 +158,11 @@ namespace ForgeEngine {
             uint32_t InstancedObjects = 0;
             uint32_t IndividualObjects = 0;
             float InstancingEfficiency
-                    = 0.0f; // Porcentagem de redução de draw calls
+                = 0.0f; // Porcentagem de redução de draw calls
         };
 
-        struct RenderItem {
+        struct RenderItem
+        {
             glm::mat4 Transform;
             Ref<Mesh> MeshPtr;
             Ref<Material> MaterialPtr;

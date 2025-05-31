@@ -41,10 +41,6 @@ namespace ForgeEngine
 
         // Habilitar instancing automático
         Renderer3D::EnableAutoInstancing(auto_instancing_enabled_);
-
-        FENGINE_CORE_INFO("NidavellirLayer initialized with instancing system");
-        FENGINE_CORE_INFO("Instancing threshold: {}", instancing_threshold_);
-        FENGINE_CORE_INFO("Auto instancing: {}", auto_instancing_enabled_ ? "ENABLED" : "DISABLED");
     }
 
     void NidavellirLayer::OnDetach()
@@ -65,23 +61,8 @@ namespace ForgeEngine
         auto fov = glm::mix(80.0, 90.0, glm::smoothstep(0.0f, 1.0f, t));
         glm::vec3 position = glm::vec3(x, 2.0f, z);
 
-        Renderer3D::EnableWireframe(pressed_);
+        Renderer3D::EnableWireframe(wireframe_enabled_);
         position = glm::vec3(x, 0.0f, z);
-
-        if (Input::IsKeyPressed(Key::Space) && time_ >= previous_clicked_time_ + 0.5)
-        {
-            previous_clicked_time_ = time_;
-            pressed_ = !pressed_;
-        }
-
-        // Toggle instancing com 'I'
-        if (Input::IsKeyPressed(Key::I) && time_ >= previous_instancing_toggle_time_ + 0.5)
-        {
-            previous_instancing_toggle_time_ = time_;
-            auto_instancing_enabled_ = !auto_instancing_enabled_;
-            Renderer3D::EnableAutoInstancing(auto_instancing_enabled_);
-            FENGINE_CORE_INFO("Auto instancing toggled: {}", auto_instancing_enabled_ ? "ENABLED" : "DISABLED");
-        }
 
         Renderer3D::ResetStats();
         {
@@ -93,11 +74,11 @@ namespace ForgeEngine
         Renderer3D::SetAmbientLight(glm::vec3(1.0f), 0.2);
         Renderer3D::SetPointLightPosition(position);
 
-        // Renderizar luz como esfera pequena
+        // Sphere to show where the point light is being positioned
         Renderer3D::DrawSphere(position, 0.2f, glm::vec4(1.0), 0);
 
-        // Renderizar plano do chão
-        Renderer3D::DrawMesh(glm::vec3(0.0f,-2.0,0.0),glm::vec3(100.0f),glm::vec3(0.0f),Mesh::CreatePlane(),glm::vec4(1.0), 1);
+        // Floor plane
+        Renderer3D::DrawMesh(glm::vec3(0.0f, -2.0, 0.0), glm::vec3(100.0f), glm::vec3(0.0f), Mesh::CreatePlane(), glm::vec4(1.0), 1);
 
         EarlyDepthTestManager::DebugDepthBuffer();
 
@@ -130,9 +111,9 @@ namespace ForgeEngine
             int a = i % 20;
             float radius = 3.0f + a;
             glm::vec3 spherePos = glm::vec3(
-            cos(angle + time_) * radius,
-            1.0f,
-            sin(angle + time_) * radius
+                cos(angle + time_) * radius,
+                1.0f,
+                sin(angle + time_) * radius
             );
 
             glm::vec4 sphereColor = glm::vec4(
@@ -154,28 +135,20 @@ namespace ForgeEngine
     {
         Layer::OnImGuiRender();
 
-        ImGui::Begin("Nidavellir Layer - Instancing Demo");
+        ImGui::Begin("Nidavellir Layer Demo");
 
         ImGui::Text("Nidavellir Layer with Automatic Instancing");
         ImGui::Separator();
-
-        // Controles da aplicação
-        ImGui::DragFloat4("Color", glm::value_ptr(square_color_), 0.0, 1.0);
-
-        ImGui::Separator();
-
         ImGui::Text("Instancing Controls");
 
         if (ImGui::Checkbox("Auto Instancing Enabled", &auto_instancing_enabled_))
         {
             Renderer3D::EnableAutoInstancing(auto_instancing_enabled_);
-            FENGINE_CORE_INFO("Auto instancing set to: {}", auto_instancing_enabled_);
         }
 
         if (ImGui::SliderInt("Instancing Threshold", reinterpret_cast<int*>(&instancing_threshold_), 1, 10))
         {
             Renderer3D::SetInstancingThreshold(instancing_threshold_);
-            FENGINE_CORE_INFO("Instancing threshold set to: {}", instancing_threshold_);
         }
 
         ImGui::Separator();
@@ -201,7 +174,7 @@ namespace ForgeEngine
 
         auto stats = Renderer3D::GetStats();
 
-        // Estatísticas gerais
+        // General statistics
         ImGui::Text("=== General Stats ===");
         ImGui::Text("Total Draw Calls: %d", stats.DrawCalls);
         ImGui::Text("Vertex Count: %d", stats.VertexCount);
@@ -210,7 +183,7 @@ namespace ForgeEngine
 
         ImGui::Separator();
 
-        // Estatísticas de culling
+        // Culling statistics
         ImGui::Text("=== Culling Stats ===");
         ImGui::Text("Total Meshes: %d", Renderer3D::GetTotalMeshCount());
         ImGui::Text("Visible Meshes: %d", stats.VisibleMeshCount);
@@ -229,7 +202,7 @@ namespace ForgeEngine
 
         ImGui::Separator();
 
-        // Análise de performance
+        // performance analysis
         uint32_t totalObjects = stats.InstancedObjects + stats.IndividualObjects;
         uint32_t totalDrawCalls = stats.InstancedDrawCalls + stats.IndividualDrawCalls;
         uint32_t drawCallsWithoutInstancing = totalObjects;
@@ -257,18 +230,102 @@ namespace ForgeEngine
 
         ImGui::End();
 
-        // Debug (chame ocasionalmente, não a cada frame)
-        if (debug_frame_ % 120 == 0) // A cada 120 frames (menos frequente)
+        if (debug_frame_ % 120 == 0)
         {
             Renderer3D::DebugCulling();
-            Renderer3D::DebugInstancing(); // Nova função de debug
+            Renderer3D::DebugInstancing();
             camera_controller_.GetCamera().DebugFrustum();
         }
+    }
+
+    bool NidavellirLayer::OnKeyPressed(KeyPressedEvent& e)
+    {
+        bool pressed = (e.IsRepeat() || !e.IsRepeat());
+        auto KeyCode = e.GetKeyCode();
+
+        if (!last_key_state_map_.contains(KeyCode))
+            last_key_state_map_[KeyCode] = false;
+
+
+        switch (KeyCode)
+        {
+        case Key::Space:
+            {
+                if (!last_key_state_map_[KeyCode])
+                {
+                    wireframe_enabled_ = !wireframe_enabled_;
+                    last_key_state_map_[KeyCode] = true;
+                }
+
+                break;
+            }
+
+        case Key::Tab:
+            {
+                if (!last_key_state_map_[KeyCode])
+                {
+                    camera_movement_enabled_ = !camera_movement_enabled_;
+                    last_key_state_map_[KeyCode] = true;
+                }
+
+                break;
+            }
+
+        case Key::I:
+            {
+                if (!last_key_state_map_[KeyCode])
+                {
+                    auto_instancing_enabled_ = !auto_instancing_enabled_;
+                    Renderer3D::EnableAutoInstancing(auto_instancing_enabled_);
+                    last_key_state_map_[KeyCode] = true;
+                }
+
+                break;
+            }
+        }
+
+        return false;
+    }
+
+    bool NidavellirLayer::OnKeyReleased(KeyReleasedEvent& e)
+    {
+        auto KeyCode = e.GetKeyCode();
+
+        switch (KeyCode)
+        {
+        case Key::Space:
+            {
+                last_key_state_map_[KeyCode] = false;
+                break;
+            }
+
+        case Key::Tab:
+            {
+                last_key_state_map_[KeyCode] = false;
+                break;
+            }
+
+        case Key::I:
+            {
+                last_key_state_map_[KeyCode] = false;
+                break;
+            }
+        }
+
+
+        return false;
     }
 
     void NidavellirLayer::OnEvent(Event& event)
     {
         Layer::OnEvent(event);
-        camera_controller_.OnEvent(event);
+        if (camera_movement_enabled_)
+        {
+            camera_controller_.OnEvent(event);
+        }
+
+        EventDispatcher dispatcher(event);
+        dispatcher.Dispatch<KeyPressedEvent>(FENGINE_BIND_EVENT_FN(OnKeyPressed));
+        dispatcher.Dispatch<KeyReleasedEvent>(FENGINE_BIND_EVENT_FN(OnKeyReleased));
     }
 }

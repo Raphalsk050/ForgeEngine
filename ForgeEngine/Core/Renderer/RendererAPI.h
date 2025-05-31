@@ -3,10 +3,13 @@
 #include <glm.hpp>
 #include "VertexArray.h"
 
-namespace ForgeEngine {
-  class RendererAPI {
+namespace ForgeEngine
+{
+  class RendererAPI
+  {
   public:
-    enum class API {
+    enum class API
+    {
       None = 0, OpenGL = 1
     };
 

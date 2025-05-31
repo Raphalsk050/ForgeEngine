@@ -2,6 +2,7 @@
 #include "FEPCH.h"
 #include "Core/Window/Window.h"
 #include "Core/Event/WindowApplicationEvent.h"
+#include "Core/Event/KeyEvent.h"
 #include "Core/Imgui/ImguiLayer.h"
 #include "Core/Layer/Layer.h"
 #include "Core/Layer/LayerStack.h"
@@ -58,6 +59,8 @@ namespace ForgeEngine {
     bool OnWindowClose(WindowCloseEvent &e);
 
     bool OnWindowResize(WindowResizeEvent &e);
+
+    bool OnKeyPressed(KeyPressedEvent& e);
 
     void ExecuteMainThreadQueue();
 

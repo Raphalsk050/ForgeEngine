@@ -10,9 +10,10 @@
 #include <gtc/type_ptr.hpp>
 #include <unordered_map>
 
-namespace ForgeEngine {
-
-    struct MeshVertex {
+namespace ForgeEngine
+{
+    struct MeshVertex
+    {
         glm::vec3 Position;
         glm::vec3 Normal;
         glm::vec3 Tangent;
@@ -21,20 +22,22 @@ namespace ForgeEngine {
         int EntityID;
     };
 
-    struct LineVertex3D {
+    struct LineVertex3D
+    {
         glm::vec3 Position;
         glm::vec4 Color;
         int EntityID;
     };
 
-    struct Renderer3DData {
+    struct Renderer3DData
+    {
         static constexpr uint32_t MaxVertices = 100000;
         static constexpr uint32_t MaxIndices = 200000;
         static constexpr uint32_t MaxTextureSlots = 32;
 
         // Instancing configuration
         uint32_t InstancingThreshold
-                = 3; // Minimum objects to enable instancing
+            = 3; // Minimum objects to enable instancing
         bool AutoInstancingEnabled = true;
 
         // Collection of render items for batching
@@ -42,7 +45,7 @@ namespace ForgeEngine {
 
         // Mapping mesh -> items for efficient batching
         std::unordered_map<std::string, std::vector<Renderer3D::RenderItem>>
-                MeshBatches;
+        MeshBatches;
 
         // Reference to the InstancedRenderer
         std::unique_ptr<InstancedRenderer> InstanceRenderer;
@@ -51,7 +54,8 @@ namespace ForgeEngine {
         const Camera3D* ActiveCamera = nullptr;
 
         // Entity culling info (stores bounding volumes)
-        struct EntityCullingData {
+        struct EntityCullingData
+        {
             glm::vec3 BoundingBoxMin;
             glm::vec3 BoundingBoxMax;
             float BoundingSphereRadius;
@@ -101,7 +105,8 @@ namespace ForgeEngine {
         bool WireframeMode = false;
 
         // Camera uniform buffer data
-        struct CameraData {
+        struct CameraData
+        {
             glm::mat4 ViewProjection;
             glm::vec3 CameraPosition;
             float _padding1;
@@ -111,7 +116,8 @@ namespace ForgeEngine {
         Ref<UniformBuffer> CameraUniformBuffer;
 
         // Lighting uniform buffer data
-        struct LightData {
+        struct LightData
+        {
             glm::vec3 PointLightPosition;
             float PointLightIntensity = 1.0f;
             glm::vec3 AmbientLightColor;
@@ -150,12 +156,15 @@ namespace ForgeEngine {
     bool PerformCulling(int entityID, const glm::mat4& transform,
                         float* outBoundingRadius = nullptr)
     {
-        if (!s_Data.ActiveCamera || entityID < 0) {
-            if (s_Data.ActiveCamera == nullptr) {
+        if (!s_Data.ActiveCamera || entityID < 0)
+        {
+            if (s_Data.ActiveCamera == nullptr)
+            {
                 FENGINE_CORE_ASSERT(false, "No Active Camera!")
                 FENGINE_CORE_ERROR("No Active Camera!");
             }
-            if (entityID < 0) {
+            if (entityID < 0)
+            {
                 FENGINE_CORE_ASSERT(false, "EntityID is invalid!")
                 FENGINE_CORE_ERROR("EntityID is invalid!");
             }
@@ -165,30 +174,34 @@ namespace ForgeEngine {
         auto& cullingData = s_Data.EntityCullingInfo[entityID];
 
         // Calculate bounding sphere radius if not set yet
-        if (cullingData.BoundingSphereRadius == 0.0f) {
+        if (cullingData.BoundingSphereRadius == 0.0f)
+        {
             glm::vec3 scale;
             scale.x = glm::length(glm::vec3(transform[0]));
             scale.y = glm::length(glm::vec3(transform[1]));
             scale.z = glm::length(glm::vec3(transform[2]));
             float maxScale = glm::max(glm::max(scale.x, scale.y), scale.z);
             cullingData.BoundingSphereRadius
-                    = maxScale * 0.866f; // ~sqrt(3)/2 for a cube
+                = maxScale * 0.866f; // ~sqrt(3)/2 for a cube
         }
 
         s_Data.TotalMeshCount++;
 
         bool isVisible = Renderer3D::IsEntityVisible(
-                entityID, transform, cullingData.BoundingSphereRadius);
+            entityID, transform, cullingData.BoundingSphereRadius);
 
-        if (isVisible) {
+        if (isVisible)
+        {
             s_Data.VisibleMeshCount++;
             cullingData.WasVisible = true;
         }
-        else {
+        else
+        {
             cullingData.WasVisible = false;
         }
 
-        if (outBoundingRadius) {
+        if (outBoundingRadius)
+        {
             *outBoundingRadius = cullingData.BoundingSphereRadius;
         }
 
@@ -221,7 +234,8 @@ namespace ForgeEngine {
             s_Data.WhiteTexture->Bind(3);
 
         // Switch between wireframe and standard shader
-        if (s_Data.WireframeMode) {
+        if (s_Data.WireframeMode)
+        {
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
             s_Data.WireframeShader->Bind();
             s_Data.WireframeShader->SetMat4("u_Transform", transform);
@@ -229,7 +243,8 @@ namespace ForgeEngine {
                                               material->GetAlbedoColor());
             s_Data.WireframeShader->SetInt("u_EntityID", entityID);
         }
-        else {
+        else
+        {
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
             s_Data.MeshShader->Bind();
             s_Data.MeshShader->SetMat4("u_Transform", transform);
@@ -269,11 +284,11 @@ namespace ForgeEngine {
                               std::filesystem::current_path().string());
 
         s_Data.MeshShader = Shader::Create(
-                "../ForgeEngine/Assets/Shaders/Renderer3D_Mesh.glsl");
+            "../ForgeEngine/Assets/Shaders/Renderer3D_Mesh.glsl");
         s_Data.WireframeShader = Shader::Create(
-                "../ForgeEngine/Assets/Shaders/Renderer3D_Wireframe.glsl");
+            "../ForgeEngine/Assets/Shaders/Renderer3D_Wireframe.glsl");
         s_Data.LineShader = Shader::Create(
-                "../ForgeEngine/Assets/Shaders/Renderer3D_Line.glsl");
+            "../ForgeEngine/Assets/Shaders/Renderer3D_Line.glsl");
 
         if (s_Data.MeshShader == nullptr)
             FENGINE_CORE_CRITICAL("Mesh shader not found");
@@ -283,21 +298,21 @@ namespace ForgeEngine {
         s_Data.InstanceRenderer->Init();
 
         FENGINE_CORE_INFO(
-                "Instanced rendering system initialized with threshold: {}",
-                s_Data.InstancingThreshold);
+            "Instanced rendering system initialized with threshold: {}",
+            s_Data.InstancingThreshold);
 
         // Create line rendering resources
         s_Data.LineVertexArray = VertexArray::Create();
         s_Data.LineVertexBuffer = VertexBuffer::Create(
-                Renderer3DData::MaxVertices * sizeof(LineVertex3D));
+            Renderer3DData::MaxVertices * sizeof(LineVertex3D));
         s_Data.LineVertexBuffer->SetLayout({
-                {ShaderDataType::Float3, "a_Position"},
-                {ShaderDataType::Float4, "a_Color"},
-                {ShaderDataType::Int, "a_EntityID"},
+            {ShaderDataType::Float3, "a_Position"},
+            {ShaderDataType::Float4, "a_Color"},
+            {ShaderDataType::Int, "a_EntityID"},
         });
         s_Data.LineVertexArray->AddVertexBuffer(s_Data.LineVertexBuffer);
         s_Data.LineVertexBufferBase
-                = new LineVertex3D[Renderer3DData::MaxVertices];
+            = new LineVertex3D[Renderer3DData::MaxVertices];
 
         // Create white texture
         s_Data.WhiteTexture = Texture2D::Create(TextureSpecification());
@@ -325,9 +340,9 @@ namespace ForgeEngine {
 
         // Create uniform buffers
         s_Data.CameraUniformBuffer
-                = UniformBuffer::Create(sizeof(Renderer3DData::CameraData), 0);
+            = UniformBuffer::Create(sizeof(Renderer3DData::CameraData), 0);
         s_Data.LightUniformBuffer
-                = UniformBuffer::Create(sizeof(Renderer3DData::LightData), 1);
+            = UniformBuffer::Create(sizeof(Renderer3DData::LightData), 1);
 
         // Set default lighting data
         s_Data.LightBuffer.PointLightPosition = s_Data.PointLightPosition;
@@ -338,7 +353,7 @@ namespace ForgeEngine {
                                            sizeof(Renderer3DData::LightData));
 
         FENGINE_CORE_INFO("Renderer3D initialized successfully with hybrid "
-                          "instancing system");
+            "instancing system");
     }
 
     void Renderer3D::Shutdown()
@@ -346,7 +361,8 @@ namespace ForgeEngine {
         FENGINE_PROFILE_FUNCTION();
 
         // Shutdown instanced renderer
-        if (s_Data.InstanceRenderer) {
+        if (s_Data.InstanceRenderer)
+        {
             s_Data.InstanceRenderer->Shutdown();
             s_Data.InstanceRenderer.reset();
         }
@@ -361,9 +377,9 @@ namespace ForgeEngine {
         EarlyDepthTestManager::BeginFrame();
 
         s_Data.CameraBuffer.ViewProjection
-                = camera.GetProjection() * glm::inverse(transform);
+            = camera.GetProjection() * glm::inverse(transform);
         s_Data.CameraBuffer.CameraPosition
-                = glm::vec3(glm::inverse(transform)[3]);
+            = glm::vec3(glm::inverse(transform)[3]);
         s_Data.CameraUniformBuffer->SetData(&s_Data.CameraBuffer,
                                             sizeof(Renderer3DData::CameraData));
 
@@ -411,21 +427,22 @@ namespace ForgeEngine {
         s_Data.Stats.MeshCount = s_Data.TotalMeshCount;
         s_Data.Stats.VisibleMeshCount = s_Data.VisibleMeshCount;
         s_Data.Stats.CulledMeshCount
-                = s_Data.TotalMeshCount - s_Data.VisibleMeshCount;
+            = s_Data.TotalMeshCount - s_Data.VisibleMeshCount;
 
         ProcessBatches();
 
         Flush();
 
-        if (s_Data.Stats.TotalInstances > 0) {
+        if (s_Data.Stats.TotalInstances > 0)
+        {
             uint32_t drawCallsWithoutInstancing
-                    = s_Data.Stats.IndividualDrawCalls
-                      + s_Data.Stats.TotalInstances;
+                = s_Data.Stats.IndividualDrawCalls
+                + s_Data.Stats.TotalInstances;
             uint32_t actualDrawCalls = s_Data.Stats.IndividualDrawCalls
-                                       + s_Data.Stats.InstancedDrawCalls;
+                + s_Data.Stats.InstancedDrawCalls;
             s_Data.Stats.InstancingEfficiency
-                    = (float)(drawCallsWithoutInstancing - actualDrawCalls)
-                      / (float)drawCallsWithoutInstancing * 100.0f;
+                = (float)(drawCallsWithoutInstancing - actualDrawCalls)
+                / (float)drawCallsWithoutInstancing * 100.0f;
         }
     }
 
@@ -452,25 +469,30 @@ namespace ForgeEngine {
     {
         FENGINE_PROFILE_FUNCTION();
 
-        if (!s_Data.AutoInstancingEnabled) {
+        if (!s_Data.AutoInstancingEnabled)
+        {
             // If auto instancing is disabled, render everything individually
-            for (const auto& item: s_Data.RenderQueue) {
+            for (const auto& item : s_Data.RenderQueue)
+            {
                 RenderIndividualItem(item);
             }
             return;
         }
 
         // Group items by mesh
-        for (const auto& item: s_Data.RenderQueue) {
+        for (const auto& item : s_Data.RenderQueue)
+        {
             std::string meshKey = GetMeshKey(item.MeshPtr);
             s_Data.MeshBatches[meshKey].push_back(item);
         }
 
         // Process each group
-        for (const auto& [meshKey, items]: s_Data.MeshBatches) {
+        for (const auto& [meshKey, items] : s_Data.MeshBatches)
+        {
             if (ShouldUseInstancing(items)) { RenderInstancedBatch(items); }
-            else {
-                for (const auto& item: items) { RenderIndividualItem(item); }
+            else
+            {
+                for (const auto& item : items) { RenderIndividualItem(item); }
             }
         }
     }
@@ -490,7 +512,8 @@ namespace ForgeEngine {
         colors.reserve(items.size());
         entityIDs.reserve(items.size());
 
-        for (const auto& item: items) {
+        for (const auto& item : items)
+        {
             transforms.push_back(item.Transform);
             colors.push_back(item.Color);
             entityIDs.push_back(item.EntityID);
@@ -505,9 +528,12 @@ namespace ForgeEngine {
         s_Data.Stats.TotalInstances += items.size();
         s_Data.Stats.InstancedObjects += items.size();
 
+#ifdef FENGINE_SHADER_DEBUG
         FENGINE_CORE_TRACE(
-                "Rendered {} instances of mesh {} in single draw call",
-                items.size(), GetMeshKey(items[0].MeshPtr));
+            "Rendered {} instances of mesh {} in single draw call",
+            items.size(), GetMeshKey(items[0].MeshPtr));
+#endif
+
     }
 
     void Renderer3D::RenderIndividualItem(const RenderItem& item)
@@ -515,7 +541,8 @@ namespace ForgeEngine {
         FENGINE_PROFILE_FUNCTION();
 
         Ref<Material> material = item.MaterialPtr;
-        if (!material) {
+        if (!material)
+        {
             // Use default material with specified color
             s_Data.DefaultMaterial->SetAlbedoColor(item.Color);
             material = s_Data.DefaultMaterial;
@@ -528,8 +555,8 @@ namespace ForgeEngine {
     bool Renderer3D::ShouldUseInstancing(const std::vector<RenderItem>& items)
     {
         return s_Data.AutoInstancingEnabled
-               && items.size() >= s_Data.InstancingThreshold
-               && items.size() <= s_Data.InstanceRenderer->GetMaxInstances();
+            && items.size() >= s_Data.InstancingThreshold
+            && items.size() <= s_Data.InstanceRenderer->GetMaxInstances();
     }
 
     std::string Renderer3D::GetMeshKey(Ref<Mesh> mesh)
@@ -599,7 +626,7 @@ namespace ForgeEngine {
                               const glm::vec4& color, int entityID)
     {
         glm::mat4 transform
-                = CreateTransformMatrix(position, size, glm::vec3(0.0f));
+            = CreateTransformMatrix(position, size, glm::vec3(0.0f));
         DrawCube(transform, color, entityID);
     }
 
@@ -607,7 +634,7 @@ namespace ForgeEngine {
                               Ref<Material> material, int entityID)
     {
         glm::mat4 transform = glm::translate(glm::mat4(1.0f), position)
-                              * glm::scale(glm::mat4(1.0f), size);
+            * glm::scale(glm::mat4(1.0f), size);
         DrawCube(transform, material, entityID);
     }
 
@@ -627,7 +654,7 @@ namespace ForgeEngine {
                                 const glm::vec4& color, int entityID)
     {
         glm::mat4 transform = glm::translate(glm::mat4(1.0f), position)
-                              * glm::scale(glm::mat4(1.0f), glm::vec3(radius));
+            * glm::scale(glm::mat4(1.0f), glm::vec3(radius));
         DrawSphere(transform, color, entityID);
     }
 
@@ -635,7 +662,7 @@ namespace ForgeEngine {
                                 Ref<Material> material, int entityID)
     {
         glm::mat4 transform = glm::translate(glm::mat4(1.0f), position)
-                              * glm::scale(glm::mat4(1.0f), glm::vec3(radius));
+            * glm::scale(glm::mat4(1.0f), glm::vec3(radius));
         DrawSphere(transform, material, entityID);
     }
 
@@ -673,20 +700,20 @@ namespace ForgeEngine {
         glm::vec3 halfSize = size * 0.5f;
 
         glm::vec3 p0
-                = position + glm::vec3(-halfSize.x, -halfSize.y, -halfSize.z);
+            = position + glm::vec3(-halfSize.x, -halfSize.y, -halfSize.z);
         glm::vec3 p1
-                = position + glm::vec3(halfSize.x, -halfSize.y, -halfSize.z);
+            = position + glm::vec3(halfSize.x, -halfSize.y, -halfSize.z);
         glm::vec3 p2
-                = position + glm::vec3(halfSize.x, -halfSize.y, halfSize.z);
+            = position + glm::vec3(halfSize.x, -halfSize.y, halfSize.z);
         glm::vec3 p3
-                = position + glm::vec3(-halfSize.x, -halfSize.y, halfSize.z);
+            = position + glm::vec3(-halfSize.x, -halfSize.y, halfSize.z);
         glm::vec3 p4
-                = position + glm::vec3(-halfSize.x, halfSize.y, -halfSize.z);
+            = position + glm::vec3(-halfSize.x, halfSize.y, -halfSize.z);
         glm::vec3 p5
-                = position + glm::vec3(halfSize.x, halfSize.y, -halfSize.z);
+            = position + glm::vec3(halfSize.x, halfSize.y, -halfSize.z);
         glm::vec3 p6 = position + glm::vec3(halfSize.x, halfSize.y, halfSize.z);
         glm::vec3 p7
-                = position + glm::vec3(-halfSize.x, halfSize.y, halfSize.z);
+            = position + glm::vec3(-halfSize.x, halfSize.y, halfSize.z);
 
         // Bottom face
         DrawLine3D(p0, p1, color, entityID);
@@ -752,7 +779,8 @@ namespace ForgeEngine {
     {
         if (!src.Model) return;
 
-        for (const auto& mesh: src.Model->GetMeshes()) {
+        for (const auto& mesh : src.Model->GetMeshes())
+        {
             if (src.OverrideMaterial)
                 DrawMesh(transform, mesh, src.OverrideMaterial, entityID);
             else if (mesh->GetMaterial())
@@ -766,10 +794,11 @@ namespace ForgeEngine {
     {
         FENGINE_PROFILE_FUNCTION();
 
-        if (s_Data.LineVertexCount) {
+        if (s_Data.LineVertexCount)
+        {
             uint32_t dataSize
-                    = (uint32_t)((uint8_t*)s_Data.LineVertexBufferPtr
-                                 - (uint8_t*)s_Data.LineVertexBufferBase);
+                = (uint32_t)((uint8_t*)s_Data.LineVertexBufferPtr
+                    - (uint8_t*)s_Data.LineVertexBufferBase);
             s_Data.LineVertexBuffer->SetData(s_Data.LineVertexBufferBase,
                                              dataSize);
 
@@ -818,7 +847,8 @@ namespace ForgeEngine {
 
     bool Renderer3D::IsPointVisible(const glm::vec3& point)
     {
-        if (s_Data.ActiveCamera) {
+        if (s_Data.ActiveCamera)
+        {
             return s_Data.ActiveCamera->PointInFrustum(point);
         }
         return true;
@@ -826,7 +856,8 @@ namespace ForgeEngine {
 
     bool Renderer3D::IsSphereVisible(const glm::vec3& center, float radius)
     {
-        if (s_Data.ActiveCamera) {
+        if (s_Data.ActiveCamera)
+        {
             return s_Data.ActiveCamera->SphereInFrustum(center, radius);
         }
         return true;
@@ -834,7 +865,8 @@ namespace ForgeEngine {
 
     bool Renderer3D::IsAABBVisible(const glm::vec3& min, const glm::vec3& max)
     {
-        if (s_Data.ActiveCamera) {
+        if (s_Data.ActiveCamera)
+        {
             return s_Data.ActiveCamera->AABBInFrustum(min, max);
         }
         return true;
@@ -908,7 +940,7 @@ namespace ForgeEngine {
     {
         if (s_Data.TotalMeshCount == 0) return 0.0f;
         return (float)(s_Data.TotalMeshCount - s_Data.VisibleMeshCount)
-               / (float)s_Data.TotalMeshCount * 100.0f;
+            / (float)s_Data.TotalMeshCount * 100.0f;
     }
 
     float Renderer3D::GetInstancingEfficiency()
@@ -955,10 +987,11 @@ namespace ForgeEngine {
 
     void Renderer3D::DebugInstancing()
     {
+#ifdef FENGINE_CULLING_DEBUG
         FENGINE_CORE_INFO("=== INSTANCING DEBUG ===");
         FENGINE_CORE_INFO("Auto instancing: {}", s_Data.AutoInstancingEnabled
-                                                         ? "ENABLED"
-                                                         : "DISABLED");
+                          ? "ENABLED"
+                          : "DISABLED");
         FENGINE_CORE_INFO("Instancing threshold: {}",
                           s_Data.InstancingThreshold);
         FENGINE_CORE_INFO("Render queue size: {}", s_Data.RenderQueue.size());
@@ -970,12 +1003,14 @@ namespace ForgeEngine {
         FENGINE_CORE_INFO("Total instances: {}", s_Data.Stats.TotalInstances);
         FENGINE_CORE_INFO("Instancing efficiency: {:.2f}%",
                           s_Data.Stats.InstancingEfficiency);
+#endif
     }
 
     void Renderer3D::RecalculateEntityBounds(int entityID)
     {
         auto it = s_Data.EntityCullingInfo.find(entityID);
-        if (it != s_Data.EntityCullingInfo.end()) {
+        if (it != s_Data.EntityCullingInfo.end())
+        {
             it->second.BoundingSphereRadius = 0.0f;
         }
     }
@@ -984,5 +1019,4 @@ namespace ForgeEngine {
     {
         s_Data.EntityCullingInfo.clear();
     }
-
 } // namespace ForgeEngine

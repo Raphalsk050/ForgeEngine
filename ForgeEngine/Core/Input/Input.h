@@ -12,6 +12,8 @@ namespace ForgeEngine
     public:
         static bool IsKeyPressed(KeyCode key);
 
+        static bool IsKeyReleased(KeyCode key);
+
         static bool IsMouseButtonPressed(MouseCode button);
 
         static glm::vec2 GetMousePosition();

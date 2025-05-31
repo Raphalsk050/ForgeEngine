@@ -300,7 +300,9 @@ void OpenGLShader::SetMat4(const std::string& name, const glm::mat4& value) {
 void OpenGLShader::UploadUniformInt(const std::string& name, int value) {
   GLint location = glGetUniformLocation(m_RendererID, name.c_str());
   if (location == -1) {
+#ifdef FENGINE_SHADER_DEBUG
     FENGINE_CORE_WARN("Uniform '{}' not found in shader '{}'", name, m_Name);
+#endif
     return;
   }
   glUniform1i(location, value);
@@ -309,7 +311,9 @@ void OpenGLShader::UploadUniformInt(const std::string& name, int value) {
 void OpenGLShader::UploadUniformIntArray(const std::string& name, int* values, uint32_t count) {
   GLint location = glGetUniformLocation(m_RendererID, name.c_str());
   if (location == -1) {
+#ifdef FENGINE_SHADER_DEBUG
     FENGINE_CORE_WARN("Uniform '{}' not found in shader '{}'", name, m_Name);
+#endif
     return;
   }
   glUniform1iv(location, count, values);
@@ -318,7 +322,9 @@ void OpenGLShader::UploadUniformIntArray(const std::string& name, int* values, u
 void OpenGLShader::UploadUniformFloat(const std::string& name, float value) {
   GLint location = glGetUniformLocation(m_RendererID, name.c_str());
   if (location == -1) {
+#ifdef FENGINE_SHADER_DEBUG
     FENGINE_CORE_WARN("Uniform '{}' not found in shader '{}'", name, m_Name);
+#endif
     return;
   }
   glUniform1f(location, value);
@@ -327,7 +333,9 @@ void OpenGLShader::UploadUniformFloat(const std::string& name, float value) {
 void OpenGLShader::UploadUniformFloat2(const std::string& name, const glm::vec2& value) {
   GLint location = glGetUniformLocation(m_RendererID, name.c_str());
   if (location == -1) {
+#ifdef FENGINE_SHADER_DEBUG
     FENGINE_CORE_WARN("Uniform '{}' not found in shader '{}'", name, m_Name);
+#endif
     return;
   }
   glUniform2f(location, value.x, value.y);
@@ -336,7 +344,9 @@ void OpenGLShader::UploadUniformFloat2(const std::string& name, const glm::vec2&
 void OpenGLShader::UploadUniformFloat3(const std::string& name, const glm::vec3& value) {
   GLint location = glGetUniformLocation(m_RendererID, name.c_str());
   if (location == -1) {
+#ifdef FENGINE_SHADER_DEBUG
     FENGINE_CORE_WARN("Uniform '{}' not found in shader '{}'", name, m_Name);
+#endif
     return;
   }
   glUniform3f(location, value.x, value.y, value.z);
@@ -345,7 +355,9 @@ void OpenGLShader::UploadUniformFloat3(const std::string& name, const glm::vec3&
 void OpenGLShader::UploadUniformFloat4(const std::string& name, const glm::vec4& value) {
   GLint location = glGetUniformLocation(m_RendererID, name.c_str());
   if (location == -1) {
+#ifdef FENGINE_SHADER_DEBUG
     FENGINE_CORE_WARN("Uniform '{}' not found in shader '{}'", name, m_Name);
+#endif
     return;
   }
   glUniform4f(location, value.x, value.y, value.z, value.w);
@@ -354,7 +366,9 @@ void OpenGLShader::UploadUniformFloat4(const std::string& name, const glm::vec4&
 void OpenGLShader::UploadUniformMat3(const std::string& name, const glm::mat3& matrix) {
   GLint location = glGetUniformLocation(m_RendererID, name.c_str());
   if (location == -1) {
+#ifdef FENGINE_SHADER_DEBUG
     FENGINE_CORE_WARN("Uniform '{}' not found in shader '{}'", name, m_Name);
+#endif
     return;
   }
   glUniformMatrix3fv(location, 1, GL_FALSE, glm::value_ptr(matrix));
@@ -363,7 +377,9 @@ void OpenGLShader::UploadUniformMat3(const std::string& name, const glm::mat3& m
 void OpenGLShader::UploadUniformMat4(const std::string& name, const glm::mat4& matrix) {
   GLint location = glGetUniformLocation(m_RendererID, name.c_str());
   if (location == -1) {
+#ifdef FENGINE_SHADER_DEBUG
     FENGINE_CORE_WARN("Uniform '{}' not found in shader '{}'", name, m_Name);
+#endif
     return;
   }
   glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(matrix));

@@ -1,9 +1,10 @@
 #pragma once
 #include "FEPCH.h"
 
-namespace ForgeEngine {
-
-    enum class ShaderDataType {
+namespace ForgeEngine
+{
+    enum class ShaderDataType
+    {
         None = 0,
         Float,
         Float2,
@@ -20,7 +21,8 @@ namespace ForgeEngine {
 
     static glm::uint32_t ShaderDataTypeSize(ShaderDataType type)
     {
-        switch (type) {
+        switch (type)
+        {
         case ShaderDataType::Float:
             return 4;
         case ShaderDataType::Float2:
@@ -49,7 +51,8 @@ namespace ForgeEngine {
         return 0;
     }
 
-    struct BufferElement {
+    struct BufferElement
+    {
         std::string Name;
         ShaderDataType Type;
         uint32_t Size;
@@ -62,11 +65,13 @@ namespace ForgeEngine {
                       bool normalized = false)
             : Name(name), Type(type), Size(ShaderDataTypeSize(type)), Offset(0),
               Normalized(normalized)
-        {}
+        {
+        }
 
         uint32_t GetComponentCount() const
         {
-            switch (Type) {
+            switch (Type)
+            {
             case ShaderDataType::Float:
                 return 1;
             case ShaderDataType::Float2:
@@ -96,9 +101,12 @@ namespace ForgeEngine {
         }
     };
 
-    class BufferLayout {
+    class BufferLayout
+    {
     public:
-        BufferLayout() {}
+        BufferLayout()
+        {
+        }
 
         BufferLayout(std::initializer_list<BufferElement> elements)
             : m_Elements(elements)
@@ -107,6 +115,7 @@ namespace ForgeEngine {
         }
 
         uint32_t GetStride() const { return m_Stride; }
+
         const std::vector<BufferElement>& GetElements() const
         {
             return m_Elements;
@@ -116,11 +125,14 @@ namespace ForgeEngine {
         {
             return m_Elements.begin();
         }
+
         std::vector<BufferElement>::iterator end() { return m_Elements.end(); }
+
         std::vector<BufferElement>::const_iterator begin() const
         {
             return m_Elements.begin();
         }
+
         std::vector<BufferElement>::const_iterator end() const
         {
             return m_Elements.end();
@@ -131,7 +143,8 @@ namespace ForgeEngine {
         {
             size_t offset = 0;
             m_Stride = 0;
-            for (auto& element: m_Elements) {
+            for (auto& element : m_Elements)
+            {
                 element.Offset = offset;
                 offset += element.Size;
                 m_Stride += element.Size;
@@ -143,7 +156,8 @@ namespace ForgeEngine {
         uint32_t m_Stride = 0;
     };
 
-    class VertexBuffer {
+    class VertexBuffer
+    {
     public:
         virtual ~VertexBuffer() = default;
 
@@ -159,7 +173,8 @@ namespace ForgeEngine {
         static Ref<VertexBuffer> Create(float* vertices, uint32_t size);
     };
 
-    class IndexBuffer {
+    class IndexBuffer
+    {
     public:
         virtual ~IndexBuffer() = default;
 
@@ -170,5 +185,4 @@ namespace ForgeEngine {
 
         static Ref<IndexBuffer> Create(uint32_t* indices, uint32_t count);
     };
-
 } // namespace ForgeEngine

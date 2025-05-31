@@ -20,13 +20,6 @@ namespace ForgeEngine
     {
         FENGINE_PROFILE_FUNCTION();
 
-        m_Forward = Input::IsKeyPressed(Key::W);
-        m_Backward = Input::IsKeyPressed(Key::S);
-        m_Left = Input::IsKeyPressed(Key::A);
-        m_Right = Input::IsKeyPressed(Key::D);
-        m_Up = Input::IsKeyPressed(Key::E);
-        m_Down = Input::IsKeyPressed(Key::Q);
-
         // Update based on control mode
         switch (m_ControlMode)
         {
@@ -140,6 +133,7 @@ namespace ForgeEngine
         dispatcher.Dispatch<MouseScrolledEvent>(FENGINE_BIND_EVENT_FN(Camera3DController::OnMouseScrolled));
         dispatcher.Dispatch<WindowResizeEvent>(FENGINE_BIND_EVENT_FN(Camera3DController::OnWindowResized));
         dispatcher.Dispatch<KeyPressedEvent>(FENGINE_BIND_EVENT_FN(Camera3DController::OnKeyPressed));
+        dispatcher.Dispatch<KeyReleasedEvent>(FENGINE_BIND_EVENT_FN(Camera3DController::OnKeyReleased));
     }
 
     bool Camera3DController::OnMouseMoved(MouseMovedEvent& e)
@@ -159,12 +153,12 @@ namespace ForgeEngine
         xoffset *= mouse_sensitivity_;
         yoffset *= mouse_sensitivity_;
 
-        m_Yaw   += xoffset;
+        m_Yaw += xoffset;
         m_Pitch += yoffset;
 
-        if(m_Pitch > 89.0f)
+        if (m_Pitch > 89.0f)
             m_Pitch = 89.0f;
-        if(m_Pitch < -89.0f)
+        if (m_Pitch < -89.0f)
             m_Pitch = -89.0f;
 
         glm::vec3 direction;
@@ -210,10 +204,52 @@ namespace ForgeEngine
         // Update movement state based on keys
         switch (e.GetKeyCode())
         {
-        case Key::Space:
-            m_MouseControlEnabled = !m_MouseControlEnabled;
-            FENGINE_CORE_INFO("Pressed space");
-            m_FirstMouse = true;
+        case Key::W:
+            m_Forward = true;
+            break;
+        case Key::A:
+            m_Left = true;
+            break;
+        case Key::S:
+            m_Backward = true;
+            break;
+        case Key::D:
+            m_Right = true;
+            break;
+        case Key::Q:
+            m_Up = true;
+            break;
+        case Key::E:
+            m_Down = true;
+            break;
+        }
+
+        return false;
+    }
+
+    bool Camera3DController::OnKeyReleased(KeyReleasedEvent& e)
+    {
+        //FENGINE_CORE_INFO("Key {} state is: {}",e.GetKeyCode(),pressed);
+        // Update movement state based on keys
+        switch (e.GetKeyCode())
+        {
+        case Key::W:
+            m_Forward = false;
+            break;
+        case Key::A:
+            m_Left = false;
+            break;
+        case Key::S:
+            m_Backward = false;
+            break;
+        case Key::D:
+            m_Right = false;
+            break;
+        case Key::Q:
+            m_Up = false;
+            break;
+        case Key::E:
+            m_Down = false;
             break;
         }
 

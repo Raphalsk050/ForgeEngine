@@ -62,7 +62,8 @@ private:
     bool OnMouseScrolled(MouseScrolledEvent& e);
     bool OnWindowResized(WindowResizeEvent& e);
     bool OnKeyPressed(KeyPressedEvent& e);
-    
+    bool OnKeyReleased(KeyReleasedEvent& e);
+
     // Update methods for different control modes
     void UpdateFlyMode(Timestep ts);
     void UpdateOrbitMode(Timestep ts);

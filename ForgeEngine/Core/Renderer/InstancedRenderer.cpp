@@ -11,8 +11,9 @@ namespace ForgeEngine
 
     void InstancedRenderer::Init()
     {
+#ifdef FENGINE_RENDER_DEBUG
         FENGINE_CORE_INFO("Initializing Efficient Instanced Renderer...");
-
+#endif
         CreateInstancedShader();
 
         m_InstanceBuffer = VertexBuffer::Create(MAX_INSTANCES * sizeof(OptimizedInstanceData));
@@ -24,8 +25,8 @@ namespace ForgeEngine
         }
 
         BufferLayout instanceLayout = {
-            {ShaderDataType::Mat4, "a_InstanceMatrix"},      // locations 3,4,5,6
-            {ShaderDataType::Float4, "a_InstanceColor"},     // location 7
+            {ShaderDataType::Mat4, "a_InstanceMatrix"}, // locations 3,4,5,6
+            {ShaderDataType::Float4, "a_InstanceColor"}, // location 7
             {ShaderDataType::Float4, "a_InstanceCustomData"} // location 8
         };
         m_InstanceBuffer->SetLayout(instanceLayout);
@@ -33,14 +34,16 @@ namespace ForgeEngine
         m_InstanceData.reserve(MAX_INSTANCES);
 
         ResetStats();
-
+#ifdef FENGINE_RENDER_DEBUG
         FENGINE_CORE_INFO("Instanced Renderer initialized successfully. Max instances: {}", MAX_INSTANCES);
+#endif
     }
 
     void InstancedRenderer::Shutdown()
     {
+#ifdef FENGINE_RENDER_DEBUG
         FENGINE_CORE_INFO("Shutting down Instanced Renderer...");
-
+#endif
         // Clear cache
         m_InstancedVAOs.clear();
         m_InstanceData.clear();
@@ -48,21 +51,22 @@ namespace ForgeEngine
         // Reset pointers
         m_InstanceBuffer.reset();
         m_InstancedShader.reset();
-
+#ifdef FENGINE_RENDER_DEBUG
         FENGINE_CORE_INFO("Instanced Renderer shutdown complete");
+#endif
     }
 
     void InstancedRenderer::DrawInstancedMesh(const std::vector<glm::mat4>& transforms,
-                                             Ref<Mesh> mesh,
-                                             const std::vector<glm::vec4>& colors,
-                                             const std::vector<int>& entityIDs)
+                                              Ref<Mesh> mesh,
+                                              const std::vector<glm::vec4>& colors,
+                                              const std::vector<int>& entityIDs)
     {
         FENGINE_PROFILE_FUNCTION();
 
         if (transforms.empty() || transforms.size() != colors.size() || transforms.size() != entityIDs.size())
         {
             FENGINE_CORE_ERROR("DrawInstancedMesh: Mismatched input sizes - transforms: {}, colors: {}, entityIDs: {}",
-                              transforms.size(), colors.size(), entityIDs.size());
+                               transforms.size(), colors.size(), entityIDs.size());
             return;
         }
 
@@ -94,7 +98,7 @@ namespace ForgeEngine
         if (m_BufferNeedsUpdate)
         {
             m_InstanceBuffer->SetData(m_InstanceData.data(),
-                                    m_InstanceData.size() * sizeof(OptimizedInstanceData));
+                                      m_InstanceData.size() * sizeof(OptimizedInstanceData));
             m_BufferNeedsUpdate = false;
             m_Stats.BufferUpdates++;
         }
@@ -220,7 +224,9 @@ void main()
             }
             else
             {
+#ifdef FENGINE_RENDER_DEBUG
                 FENGINE_CORE_INFO("Instanced shader created successfully");
+#endif
             }
         }
         catch (const std::exception& e)
@@ -230,8 +236,8 @@ void main()
     }
 
     void InstancedRenderer::PrepareInstanceData(const std::vector<glm::mat4>& transforms,
-                                               const std::vector<glm::vec4>& colors,
-                                               const std::vector<int>& entityIDs)
+                                                const std::vector<glm::vec4>& colors,
+                                                const std::vector<int>& entityIDs)
     {
         m_InstanceData.clear();
 
@@ -253,10 +259,10 @@ void main()
             instance.Transform = transforms[i];
             instance.Color = colors[i];
             instance.CustomData = glm::vec4(
-                0.0f,                    // Metallic
-                0.5f,                    // Roughness
-                float(entityIDs[i]),     // EntityID
-                0.0f                     // Padding
+                0.0f, // Metallic
+                0.5f, // Roughness
+                float(entityIDs[i]), // EntityID
+                0.0f // Padding
             );
 
             m_InstanceData.push_back(instance);
@@ -297,8 +303,9 @@ void main()
         m_InstancedVAOs[mesh] = instancedVAO;
         m_Stats.CachedVAOs = m_InstancedVAOs.size();
 
+#ifdef FENGINE_RENDER_DEBUG
         FENGINE_CORE_INFO("Created new instanced VAO for mesh. Total cached: {}", m_Stats.CachedVAOs);
-
+#endif
         return instancedVAO;
     }
 
@@ -319,8 +326,8 @@ void main()
                 {
                     glEnableVertexAttribArray(index + i);
                     glVertexAttribPointer(index + i, 4, GL_FLOAT, GL_FALSE,
-                                        layout.GetStride(),                    // Stride correto: tamanho total da estrutura
-                                        (void*)(element.Offset + i * vec4Size)); // Offset correto: offset do elemento + deslocamento do vec4
+                                          layout.GetStride(), // Stride correto: tamanho total da estrutura
+                                          (void*)(element.Offset + i * vec4Size)); // Offset correto: offset do elemento + deslocamento do vec4
                     glVertexAttribDivisor(index + i, 1);
                 }
                 index += 4;
@@ -329,7 +336,7 @@ void main()
             {
                 glEnableVertexAttribArray(index);
                 glVertexAttribPointer(index, 4, GL_FLOAT, GL_FALSE,
-                                    layout.GetStride(), (void*)element.Offset); // Já estava correto
+                                      layout.GetStride(), (void*)element.Offset); // Já estava correto
                 glVertexAttribDivisor(index, 1);
                 index++;
             }
@@ -376,7 +383,7 @@ void main()
 
         vao->Bind();
         glDrawElementsInstanced(GL_TRIANGLES, mesh->GetIndexCount(),
-                              GL_UNSIGNED_INT, 0, instanceCount);
+                                GL_UNSIGNED_INT, 0, instanceCount);
         vao->Unbind();
     }
 
@@ -384,7 +391,11 @@ void main()
     {
         m_InstancedVAOs.clear();
         m_Stats.CachedVAOs = 0;
+
+#ifdef FENGINE_RENDER_DEBUG
         FENGINE_CORE_INFO("Instanced renderer cache cleared");
+#endif
+
     }
 
     void InstancedRenderer::ResetStats()
@@ -407,10 +418,10 @@ void main()
             s_GlobalInstancedRenderer.Shutdown();
         }
 
-        void DrawMesh(const std::vector<glm::mat4>& transforms, 
-                     Ref<Mesh> mesh, 
-                     const std::vector<glm::vec4>& colors,
-                     const std::vector<int>& entityIDs)
+        void DrawMesh(const std::vector<glm::mat4>& transforms,
+                      Ref<Mesh> mesh,
+                      const std::vector<glm::vec4>& colors,
+                      const std::vector<int>& entityIDs)
         {
             s_GlobalInstancedRenderer.DrawInstancedMesh(transforms, mesh, colors, entityIDs);
         }
@@ -425,5 +436,4 @@ void main()
             s_GlobalInstancedRenderer.ResetStats();
         }
     }
-
 } // namespace ForgeEngine

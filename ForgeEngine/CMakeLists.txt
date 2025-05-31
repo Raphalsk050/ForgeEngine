@@ -173,7 +173,6 @@ function(forge_add_library target_name)
     target_compile_definitions(${target_name}
             PUBLIC
             ${FORGE_PLATFORM_DEFINE}
-            PRIVATE
             $<$<CONFIG:Debug>:DEBUG>
             $<$<CONFIG:Release>:NDEBUG>
     )

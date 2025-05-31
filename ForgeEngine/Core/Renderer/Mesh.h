@@ -4,9 +4,10 @@
 #include "Core/Renderer/VertexArray.h"
 #include "Core/Renderer/Material.h"
 
-namespace ForgeEngine {
-
-    class Mesh {
+namespace ForgeEngine
+{
+    class Mesh
+    {
     public:
         Mesh();
         ~Mesh() = default;
@@ -42,7 +43,8 @@ namespace ForgeEngine {
     };
 
     // A model class to hold multiple meshes
-    class Model {
+    class Model
+    {
     public:
         Model() = default;
         ~Model() = default;
@@ -56,5 +58,4 @@ namespace ForgeEngine {
     private:
         std::vector<Ref<Mesh>> m_Meshes;
     };
-
 } // namespace BEngine

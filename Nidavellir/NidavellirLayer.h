@@ -20,7 +20,8 @@ namespace ForgeEngine
 
     private:
         Camera3DController camera_controller_ = Camera3DController(1);
-
+        bool OnKeyPressed(KeyPressedEvent& e);
+        bool OnKeyReleased(KeyReleasedEvent& e);
         glm::vec4 square_color_ = { 1.0, 1.0, 1.0, 1.0f };
         glm::vec3 quad_position_ = { 0.0f, 0.0f, 0.0f };
         glm::vec3 quad_size_ = { 2.0f, 2.0f, 2.0f };
@@ -34,7 +35,9 @@ namespace ForgeEngine
         float time_ = 0.0f;
         float previous_clicked_time_ = 0.0f;
         float new_color_[4] = {};
-        bool pressed_ = false;
+        bool wireframe_enabled_ = false;
+        bool camera_movement_enabled_ = true;
+        std::unordered_map<KeyCode, bool> last_key_state_map_;
 
         Ref<Mesh> mesh_;
 

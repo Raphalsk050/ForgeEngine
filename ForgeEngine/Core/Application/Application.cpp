@@ -74,6 +74,7 @@ namespace ForgeEngine {
     EventDispatcher dispatcher(e);
     dispatcher.Dispatch<WindowCloseEvent>(FENGINE_BIND_EVENT_FN(Application::OnWindowClose));
     dispatcher.Dispatch<WindowResizeEvent>(FENGINE_BIND_EVENT_FN(Application::OnWindowResize));
+    dispatcher.Dispatch<KeyPressedEvent>(FENGINE_BIND_EVENT_FN(Application::OnKeyPressed));
 
     for (auto it = layer_stack_.rbegin(); it != layer_stack_.rend(); ++it) {
       if (e.Handled)
@@ -112,13 +113,6 @@ namespace ForgeEngine {
       }
 
       window_->OnUpdate();
-
-      // TODO(rafael): this is a temporary feature
-      if (Input::IsKeyPressed(Key::Escape))
-      {
-        FENGINE_CORE_INFO("Escape key was pressed!");
-        Application::Close();
-      }
     }
   }
 
@@ -139,6 +133,21 @@ namespace ForgeEngine {
 
     return false;
   }
+
+  bool Application::OnKeyPressed(KeyPressedEvent& e)
+  {
+    switch (e.GetKeyCode())
+    {
+      case Key::Escape:
+        {
+          FENGINE_CORE_INFO("Escape key was pressed!");
+          Application::Close();
+        }
+    }
+
+    return false;
+  }
+
 
   void Application::ExecuteMainThreadQueue() {
     std::scoped_lock<std::mutex> lock(main_thread_queue_mutex_);

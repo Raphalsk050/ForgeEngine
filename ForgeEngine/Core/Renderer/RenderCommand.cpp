@@ -1,7 +1,6 @@
 #include "RenderCommand.h"
 
-namespace ForgeEngine {
-
+namespace ForgeEngine
+{
   Scope<RendererAPI> RenderCommand::renderer_api_ = RendererAPI::Create();
-
 }

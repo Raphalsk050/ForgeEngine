@@ -32,9 +32,9 @@ namespace ForgeEngine
 
         // Main rendering function
         void DrawInstancedMesh(const std::vector<glm::mat4>& transforms,
-                              Ref<Mesh> mesh,
-                              const std::vector<glm::vec4>& colors,
-                              const std::vector<int>& entityIDs);
+                               Ref<Mesh> mesh,
+                               const std::vector<glm::vec4>& colors,
+                               const std::vector<int>& entityIDs);
 
         // Utility functions
         void ClearCache();
@@ -79,8 +79,8 @@ namespace ForgeEngine
         // Private helper functions
         void CreateInstancedShader();
         void PrepareInstanceData(const std::vector<glm::mat4>& transforms,
-                               const std::vector<glm::vec4>& colors,
-                               const std::vector<int>& entityIDs);
+                                 const std::vector<glm::vec4>& colors,
+                                 const std::vector<int>& entityIDs);
 
         Ref<VertexArray> GetOrCreateInstancedVAO(Ref<Mesh> mesh);
         void SetupInstanceAttributes(Ref<VertexArray> vao);
@@ -92,11 +92,10 @@ namespace ForgeEngine
         void Initialize();
         void Shutdown();
         void DrawMesh(const std::vector<glm::mat4>& transforms,
-                     Ref<Mesh> mesh,
-                     const std::vector<glm::vec4>& colors,
-                     const std::vector<int>& entityIDs);
+                      Ref<Mesh> mesh,
+                      const std::vector<glm::vec4>& colors,
+                      const std::vector<int>& entityIDs);
         InstancedRenderer::InstancedStats GetStats();
         void ResetStats();
     }
-
 } // namespace ForgeEngine
