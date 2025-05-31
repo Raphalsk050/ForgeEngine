@@ -29,15 +29,9 @@ namespace ForgeEngine
         uint32_t GetVertexCount() const { return m_VertexCount; }
         uint32_t GetIndexCount() const { return m_IndexCount; }
 
-        // ========================================================================
-        // FUNÇÃO BASE: Criação baseada em triângulos
-        // ========================================================================
         static Ref<Mesh> CreateTriangles(const std::vector<Vertex>& vertices,
                                          const std::vector<uint32_t>& indices = {});
 
-        // ========================================================================
-        // FUNÇÕES DERIVADAS: Todas usam CreateTriangles como base
-        // ========================================================================
 
         // Primitiva fundamental
         static Ref<Mesh> CreateTriangle(float size = 1.0f);

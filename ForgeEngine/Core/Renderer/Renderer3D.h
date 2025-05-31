@@ -3,22 +3,18 @@
 #include "Core/Camera/Camera.h"
 #include "Core/Camera/Camera3D.h"
 #include "Core/Camera/Camera3DController.h"
-#include "Core/Renderer/Texture.h"
-#include "Core/Renderer/Mesh.h"
 #include "Core/Renderer/Material.h"
+#include "Core/Renderer/Mesh.h"
+#include "Core/Renderer/Texture.h"
 #include "Core/Scene/Components.h"
-
+#include "glad/glad.h"
 #include <glm.hpp>
 
-#include "glad/glad.h"
-
-namespace ForgeEngine
-{
+namespace ForgeEngine {
     // Forward declaration do InstancedRenderer existente
     class InstancedRenderer;
 
-    class EarlyDepthTestManager
-    {
+    class EarlyDepthTestManager {
     public:
         static void Initialize()
         {
@@ -103,38 +99,44 @@ namespace ForgeEngine
             glGetFloatv(GL_DEPTH_RANGE, depthRange);
 
             FENGINE_CORE_INFO("=== DEPTH BUFFER STATUS ===");
-            FENGINE_CORE_INFO("Depth Test: {}", depthTest ? "ENABLED" : "DISABLED");
-            FENGINE_CORE_INFO("Depth Mask: {}", depthMask ? "WRITE" : "READ_ONLY");
+            FENGINE_CORE_INFO("Depth Test: {}",
+                              depthTest ? "ENABLED" : "DISABLED");
+            FENGINE_CORE_INFO("Depth Mask: {}",
+                              depthMask ? "WRITE" : "READ_ONLY");
             FENGINE_CORE_INFO("Depth Func: {}", GetDepthFuncName(depthFunc));
-            FENGINE_CORE_INFO("Depth Range: [{:.3f}, {:.3f}]", depthRange[0], depthRange[1]);
+            FENGINE_CORE_INFO("Depth Range: [{:.3f}, {:.3f}]", depthRange[0],
+                              depthRange[1]);
         }
 
     private:
         static const char* GetDepthFuncName(GLint func)
         {
-            switch (func)
-            {
-            case GL_NEVER: return "NEVER";
-            case GL_LESS: return "LESS";
-            case GL_EQUAL: return "EQUAL";
-            case GL_LEQUAL: return "LEQUAL";
-            case GL_GREATER: return "GREATER";
-            case GL_NOTEQUAL: return "NOTEQUAL";
-            case GL_GEQUAL: return "GEQUAL";
-            case GL_ALWAYS: return "ALWAYS";
-            default: return "UNKNOWN";
+            switch (func) {
+            case GL_NEVER:
+                return "NEVER";
+            case GL_LESS:
+                return "LESS";
+            case GL_EQUAL:
+                return "EQUAL";
+            case GL_LEQUAL:
+                return "LEQUAL";
+            case GL_GREATER:
+                return "GREATER";
+            case GL_NOTEQUAL:
+                return "NOTEQUAL";
+            case GL_GEQUAL:
+                return "GEQUAL";
+            case GL_ALWAYS:
+                return "ALWAYS";
+            default:
+                return "UNKNOWN";
             }
         }
     };
 
-    class Renderer3D
-    {
+    class Renderer3D {
     public:
-        // ========================================================================
-        // ESTRUTURA DE ESTATÍSTICAS EXPANDIDA
-        // ========================================================================
-        struct Statistics
-        {
+        struct Statistics {
             uint32_t DrawCalls = 0;
             uint32_t MeshCount = 0;
             uint32_t VisibleMeshCount = 0;
@@ -148,14 +150,11 @@ namespace ForgeEngine
             uint32_t TotalInstances = 0;
             uint32_t InstancedObjects = 0;
             uint32_t IndividualObjects = 0;
-            float InstancingEfficiency = 0.0f; // Porcentagem de redução de draw calls
+            float InstancingEfficiency
+                    = 0.0f; // Porcentagem de redução de draw calls
         };
 
-        // ========================================================================
-        // ESTRUTURAS PARA BATCHING AUTOMÁTICO
-        // ========================================================================
-        struct RenderItem
-        {
+        struct RenderItem {
             glm::mat4 Transform;
             Ref<Mesh> MeshPtr;
             Ref<Material> MaterialPtr;
@@ -166,38 +165,25 @@ namespace ForgeEngine
             enum class Type { Mesh, Cube, Sphere } ItemType = Type::Mesh;
         };
 
-        // ========================================================================
-        // INICIALIZAÇÃO E CICLO DE VIDA
-        // ========================================================================
         static void Init();
         static void Shutdown();
 
-        // ========================================================================
-        // CONTROLE DE CENA
-        // ========================================================================
-        static void BeginScene(const Camera& camera, const glm::mat4& transform);
+        static void BeginScene(const Camera& camera,
+                               const glm::mat4& transform);
         static void BeginScene(const Camera3D& camera);
         static void BeginScene(const Camera3DController& cameraController);
         static void EndScene();
 
-        // ========================================================================
-        // CONTROLE DE BATCH
-        // ========================================================================
         static void StartBatch();
         static void Flush();
         static void NextBatch();
 
-        // ========================================================================
-        // FUNÇÕES DE CULLING
-        // ========================================================================
         static bool IsPointVisible(const glm::vec3& point);
         static bool IsSphereVisible(const glm::vec3& center, float radius);
         static bool IsAABBVisible(const glm::vec3& min, const glm::vec3& max);
-        static bool IsEntityVisible(int entityID, const glm::mat4& transform, float boundingSphereRadius);
+        static bool IsEntityVisible(int entityID, const glm::mat4& transform,
+                                    float boundingSphereRadius);
 
-        // ========================================================================
-        // RENDERIZAÇÃO DE MESHES GENÉRICAS (API MANTIDA INALTERADA)
-        // ========================================================================
         static void DrawMesh(const glm::mat4& transform, Ref<Mesh> mesh,
                              const glm::vec4& color, int entityID = -1);
         static void DrawMesh(const glm::vec3& position, const glm::vec3& scale,
@@ -209,9 +195,6 @@ namespace ForgeEngine
                              const glm::vec3& rotation, Ref<Mesh> mesh,
                              Ref<Material> material, int entityID = -1);
 
-        // ========================================================================
-        // RENDERIZAÇÃO DE PRIMITIVAS - CUBO (API MANTIDA INALTERADA)
-        // ========================================================================
         static void DrawCube(const glm::vec3& position, const glm::vec3& size,
                              const glm::vec4& color, int entityID = -1);
         static void DrawCube(const glm::vec3& position, const glm::vec3& size,
@@ -221,21 +204,15 @@ namespace ForgeEngine
         static void DrawCube(const glm::mat4& transform, Ref<Material> material,
                              int entityID = -1);
 
-        // ========================================================================
-        // RENDERIZAÇÃO DE PRIMITIVAS - ESFERA (API MANTIDA INALTERADA)
-        // ========================================================================
         static void DrawSphere(const glm::vec3& position, float radius,
                                const glm::vec4& color, int entityID = -1);
         static void DrawSphere(const glm::vec3& position, float radius,
                                Ref<Material> material, int entityID = -1);
-        static void DrawSphere(const glm::mat4& transform, const glm::vec4& color,
-                               int entityID = -1);
-        static void DrawSphere(const glm::mat4& transform, Ref<Material> material,
-                               int entityID = -1);
+        static void DrawSphere(const glm::mat4& transform,
+                               const glm::vec4& color, int entityID = -1);
+        static void DrawSphere(const glm::mat4& transform,
+                               Ref<Material> material, int entityID = -1);
 
-        // ========================================================================
-        // RENDERIZAÇÃO DE DEBUG - LINHAS E CAIXAS (MANTIDA INALTERADA)
-        // ========================================================================
         static void DrawLine3D(const glm::vec3& p0, const glm::vec3& p1,
                                const glm::vec4& color, int entityID = -1);
         static void DrawBox(const glm::vec3& position, const glm::vec3& size,
@@ -243,35 +220,20 @@ namespace ForgeEngine
         static void DrawBox(const glm::mat4& transform, const glm::vec4& color,
                             int entityID = -1);
 
-        // ========================================================================
-        // RENDERIZAÇÃO DE MODELOS (MANTIDA INALTERADA)
-        // ========================================================================
-        static void DrawModel(const glm::mat4& transform, ModelRendererComponent& src,
-                              int entityID = -1);
+        static void DrawModel(const glm::mat4& transform,
+                              ModelRendererComponent& src, int entityID = -1);
 
-        // ========================================================================
-        // CONFIGURAÇÕES DE ILUMINAÇÃO (MANTIDA INALTERADA)
-        // ========================================================================
         static void SetPointLightPosition(const glm::vec3& position);
         static void SetAmbientLight(const glm::vec3& color, float intensity);
 
-        // ========================================================================
-        // CONFIGURAÇÕES DE RENDERIZAÇÃO (MANTIDA INALTERADA)
-        // ========================================================================
         static void EnableWireframe(bool enable);
         static bool IsWireframeEnabled();
 
-        // ========================================================================
-        // CONTROLE DE INSTANCING
-        // ========================================================================
         static void SetInstancingThreshold(uint32_t threshold);
         static uint32_t GetInstancingThreshold();
         static void EnableAutoInstancing(bool enable);
         static bool IsAutoInstancingEnabled();
 
-        // ========================================================================
-        // ESTATÍSTICAS E DEBUG (EXPANDIDO)
-        // ========================================================================
         static void ResetStats();
         static Statistics GetStats();
 
@@ -286,23 +248,14 @@ namespace ForgeEngine
         static uint32_t GetInstancedObjectCount();
         static uint32_t GetIndividualObjectCount();
 
-        // ========================================================================
-        // FUNÇÕES DE DEBUG (EXPANDIDO)
-        // ========================================================================
         static void DebugCulling();
         static void DebugInstancing();
         static void RecalculateEntityBounds(int entityID);
         static void ClearCullingData();
 
-        // ========================================================================
-        // FUNÇÕES AUXILIARES (LEGACY - MANTIDA)
-        // ========================================================================
         static void PreparePrimitives();
 
     private:
-        // ========================================================================
-        // FUNÇÕES INTERNAS PARA BATCHING E INSTANCING
-        // ========================================================================
         static void SubmitRenderItem(const RenderItem& item);
         static void ProcessBatches();
         static void RenderInstancedBatch(const std::vector<RenderItem>& items);
@@ -313,7 +266,8 @@ namespace ForgeEngine
         static std::string GetMeshKey(Ref<Mesh> mesh);
 
         // Função helper para culling centralizado (mantida)
-        friend bool PerformCulling(int entityID, const glm::mat4& transform, float* outBoundingRadius);
+        friend bool PerformCulling(int entityID, const glm::mat4& transform,
+                                   float* outBoundingRadius);
 
         // Função interna de renderização (modificada para usar o novo sistema)
         friend void DrawMeshInternal(const glm::mat4& transform, Ref<Mesh> mesh,

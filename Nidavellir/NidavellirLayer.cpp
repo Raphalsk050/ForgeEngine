@@ -35,9 +35,6 @@ namespace ForgeEngine
         camera_controller_.SetPosition(glm::vec3(0.0f, 0.0f, 0.0f));
         camera_controller_.SetRotation(glm::vec3(0.0f, 0.0f, 0.0f));
 
-        // ========================================================================
-        // CONFIGURAÇÃO DO SISTEMA DE INSTANCING
-        // ========================================================================
 
         // Configurar threshold de instancing (quantos objetos mínimos para usar instancing)
         Renderer3D::SetInstancingThreshold(instancing_threshold_);
@@ -104,9 +101,6 @@ namespace ForgeEngine
 
         EarlyDepthTestManager::DebugDepthBuffer();
 
-        // ========================================================================
-        // TESTE COM CUBOS PRIMITIVOS (também deve usar instancing)
-        // ========================================================================
 
         for (int i = 0; i < cube_count_; i++)
         {
@@ -129,9 +123,6 @@ namespace ForgeEngine
             Renderer3D::DrawCube(cubePos, glm::vec3(0.5f), cubeColor, i);
         }
 
-        // ========================================================================
-        // TESTE COM ESFERAS (mais instâncias da mesma geometria)
-        // ========================================================================
 
         for (int i = 0; i < sphere_count_; i++)
         {
@@ -163,9 +154,6 @@ namespace ForgeEngine
     {
         Layer::OnImGuiRender();
 
-        // ========================================================================
-        // PAINEL PRINCIPAL DE CONFIGURAÇÃO
-        // ========================================================================
         ImGui::Begin("Nidavellir Layer - Instancing Demo");
 
         ImGui::Text("Nidavellir Layer with Automatic Instancing");
@@ -176,9 +164,6 @@ namespace ForgeEngine
 
         ImGui::Separator();
 
-        // ========================================================================
-        // CONTROLES DE INSTANCING
-        // ========================================================================
         ImGui::Text("Instancing Controls");
 
         if (ImGui::Checkbox("Auto Instancing Enabled", &auto_instancing_enabled_))
@@ -195,9 +180,6 @@ namespace ForgeEngine
 
         ImGui::Separator();
 
-        // ========================================================================
-        // CONTROLES DE DENSIDADE DE OBJETOS
-        // ========================================================================
         ImGui::Text("Object Density Controls");
 
         ImGui::SliderInt("Grid Size", &grid_size_, 2, max_entities_);
@@ -208,9 +190,6 @@ namespace ForgeEngine
 
         ImGui::Separator();
 
-        // ========================================================================
-        // INFORMAÇÕES DE CONTROLE
-        // ========================================================================
         ImGui::Text("Controls:");
         ImGui::BulletText("Space: Toggle Wireframe");
         ImGui::BulletText("I: Toggle Auto Instancing");
@@ -218,9 +197,6 @@ namespace ForgeEngine
 
         ImGui::End();
 
-        // ========================================================================
-        // PAINEL DE ESTATÍSTICAS EXPANDIDO
-        // ========================================================================
         ImGui::Begin("Rendering Statistics");
 
         auto stats = Renderer3D::GetStats();
@@ -243,9 +219,6 @@ namespace ForgeEngine
 
         ImGui::Separator();
 
-        // ========================================================================
-        // ESTATÍSTICAS DE INSTANCING (NOVAS)
-        // ========================================================================
         ImGui::Text("=== Instancing Stats ===");
         ImGui::Text("Instanced Draw Calls: %d", stats.InstancedDrawCalls);
         ImGui::Text("Individual Draw Calls: %d", stats.IndividualDrawCalls);

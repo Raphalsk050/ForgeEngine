@@ -1,17 +1,13 @@
 #pragma once
 
-#include "Event.h"
 #include "Core/Input/MouseCodes.h"
+#include "Event.h"
 
-namespace ForgeEngine
-{
-    class MouseMovedEvent : public Event
-    {
+namespace ForgeEngine {
+    class MouseMovedEvent : public Event {
     public:
-        MouseMovedEvent(const float x, const float y)
-            : m_MouseX(x), m_MouseY(y)
-        {
-        }
+        MouseMovedEvent(const float x, const float y): m_MouseX(x), m_MouseY(y)
+        {}
 
         float GetX() const { return m_MouseX; }
         float GetY() const { return m_MouseY; }
@@ -30,13 +26,11 @@ namespace ForgeEngine
         float m_MouseX, m_MouseY;
     };
 
-    class MouseScrolledEvent : public Event
-    {
+    class MouseScrolledEvent : public Event {
     public:
         MouseScrolledEvent(const float xOffset, const float yOffset)
             : m_XOffset(xOffset), m_YOffset(yOffset)
-        {
-        }
+        {}
 
         float GetXOffset() const { return m_XOffset; }
         float GetYOffset() const { return m_YOffset; }
@@ -44,7 +38,8 @@ namespace ForgeEngine
         std::string ToString() const override
         {
             std::stringstream ss;
-            ss << "MouseScrolledEvent: " << GetXOffset() << ", " << GetYOffset();
+            ss << "MouseScrolledEvent: " << GetXOffset() << ", "
+               << GetYOffset();
             return ss.str();
         }
 
@@ -55,29 +50,24 @@ namespace ForgeEngine
         float m_XOffset, m_YOffset;
     };
 
-    class MouseButtonEvent : public Event
-    {
+    class MouseButtonEvent : public Event {
     public:
         MouseCode GetMouseButton() const { return m_Button; }
 
-        EVENT_CLASS_CATEGORY(EventCategoryMouse | EventCategoryInput | EventCategoryMouseButton)
+        EVENT_CLASS_CATEGORY(EventCategoryMouse | EventCategoryInput
+                             | EventCategoryMouseButton)
 
     protected:
-        MouseButtonEvent(const MouseCode button)
-            : m_Button(button)
-        {
-        }
+        MouseButtonEvent(const MouseCode button): m_Button(button) {}
 
         MouseCode m_Button;
     };
 
-    class MouseButtonPressedEvent : public MouseButtonEvent
-    {
+    class MouseButtonPressedEvent : public MouseButtonEvent {
     public:
         MouseButtonPressedEvent(const MouseCode button)
             : MouseButtonEvent(button)
-        {
-        }
+        {}
 
         std::string ToString() const override
         {
@@ -89,13 +79,11 @@ namespace ForgeEngine
         EVENT_CLASS_TYPE(MouseButtonPressed)
     };
 
-    class MouseButtonReleasedEvent : public MouseButtonEvent
-    {
+    class MouseButtonReleasedEvent : public MouseButtonEvent {
     public:
         MouseButtonReleasedEvent(const MouseCode button)
             : MouseButtonEvent(button)
-        {
-        }
+        {}
 
         std::string ToString() const override
         {
@@ -106,4 +94,4 @@ namespace ForgeEngine
 
         EVENT_CLASS_TYPE(MouseButtonReleased)
     };
-}
+} // namespace ForgeEngine

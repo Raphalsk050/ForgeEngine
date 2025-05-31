@@ -19,14 +19,8 @@ namespace ForgeEngine
         void OnEvent(Event& event) override;
 
     private:
-        // ========================================================================
-        // SISTEMA DE CÂMERA (MANTIDO)
-        // ========================================================================
         Camera3DController camera_controller_ = Camera3DController(1);
 
-        // ========================================================================
-        // CONFIGURAÇÕES VISUAIS (MANTIDO)
-        // ========================================================================
         glm::vec4 square_color_ = { 1.0, 1.0, 1.0, 1.0f };
         glm::vec3 quad_position_ = { 0.0f, 0.0f, 0.0f };
         glm::vec3 quad_size_ = { 2.0f, 2.0f, 2.0f };
@@ -35,9 +29,6 @@ namespace ForgeEngine
         float threshold_ = 0.001f;
         glm::vec4 color_ = glm::vec4{1.0f, 0.0f, 0.0f, 1.0f};
 
-        // ========================================================================
-        // CONTROLE DE TEMPO E ESTADO (MANTIDO)
-        // ========================================================================
         int count_ = 0;
         int debug_frame_ = 0;
         float time_ = 0.0f;
@@ -45,14 +36,8 @@ namespace ForgeEngine
         float new_color_[4] = {};
         bool pressed_ = false;
 
-        // ========================================================================
-        // RECURSOS DE RENDERIZAÇÃO (MANTIDO)
-        // ========================================================================
         Ref<Mesh> mesh_;
 
-        // ========================================================================
-        // CONFIGURAÇÕES DE INSTANCING (NOVO)
-        // ========================================================================
 
         // Controle de instancing automático
         bool auto_instancing_enabled_ = true;
@@ -65,9 +50,6 @@ namespace ForgeEngine
         int sphere_count_ = 15;      // Número de esferas flutuantes
         int max_entities_ = 1000;
 
-        // ========================================================================
-        // CONFIGURAÇÕES DE TESTE DE PERFORMANCE (NOVO)
-        // ========================================================================
 
         // Configurações avançadas de teste
         struct PerformanceTestConfig
@@ -89,9 +71,6 @@ namespace ForgeEngine
 
         } perf_config_;
 
-        // ========================================================================
-        // MÉTRICAS DE PERFORMANCE (NOVO)
-        // ========================================================================
 
         struct FrameMetrics
         {
@@ -128,9 +107,6 @@ namespace ForgeEngine
             }
         } frame_metrics_;
 
-        // ========================================================================
-        // MÉTODOS AUXILIARES (NOVO)
-        // ========================================================================
 
         // Métodos para configuração de instancing
         void UpdateInstancingSettings();

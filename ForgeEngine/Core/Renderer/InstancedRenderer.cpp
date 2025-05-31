@@ -392,9 +392,6 @@ void main()
         m_Stats = InstancedStats{};
     }
 
-    // ============================================================================
-    // GLOBAL ACCESS FUNCTIONS (OPCIONAL - REMOVER SE NÃO USADO)
-    // ============================================================================
 
     static InstancedRenderer s_GlobalInstancedRenderer;
 

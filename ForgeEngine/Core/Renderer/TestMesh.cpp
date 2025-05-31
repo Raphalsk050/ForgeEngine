@@ -81,9 +81,6 @@ namespace ForgeEngine
         m_VertexArray->SetIndexBuffer(indexBuffer);
     }
 
-    // ============================================================================
-    // FUNÇÃO BASE: CRIAÇÃO DE TRIÂNGULOS
-    // ============================================================================
 
     Ref<Mesh> TestMesh::CreateTriangles(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices)
     {
@@ -139,9 +136,6 @@ namespace ForgeEngine
         return mesh;
     }
 
-    // ============================================================================
-    // FUNÇÃO DERIVADA: TRIÂNGULO ÚNICO
-    // ============================================================================
 
     Ref<Mesh> TestMesh::CreateTriangle(float size)
     {
@@ -170,9 +164,6 @@ namespace ForgeEngine
         return CreateTriangles(vertices, indices);
     }
 
-    // ============================================================================
-    // FUNÇÃO DERIVADA: QUAD (USA TRIÂNGULOS)
-    // ============================================================================
 
     Ref<Mesh> TestMesh::CreatePlane(float width, float height)
     {
@@ -210,9 +201,6 @@ namespace ForgeEngine
         return CreateTriangles(vertices, indices);
     }
 
-    // ============================================================================
-    // FUNÇÃO DERIVADA: CUBO (USA QUADS -> TRIÂNGULOS)
-    // ============================================================================
 
     Ref<Mesh> TestMesh::CreateCube(float size)
     {
@@ -289,9 +277,6 @@ namespace ForgeEngine
         return CreateTriangles(vertices, indices);
     }
 
-    // ============================================================================
-    // FUNÇÃO DERIVADA: ESFERA (USA TRIÂNGULOS DIRETAMENTE)
-    // ============================================================================
 
     Ref<Mesh> TestMesh::CreateSphere(float radius, uint32_t segmentsX, uint32_t segmentsY)
     {
@@ -363,9 +348,6 @@ namespace ForgeEngine
         return CreateTriangles(vertices, indices);
     }
 
-    // ============================================================================
-    // FUNÇÃO DERIVADA: CILINDRO (USA TRIÂNGULOS DIRETAMENTE)
-    // ============================================================================
 
     Ref<Mesh> TestMesh::CreateCylinder(float radius, float height, uint32_t segments)
     {
