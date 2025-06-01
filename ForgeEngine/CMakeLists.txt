@@ -218,7 +218,7 @@ forge_add_library(ForgeInput
 )
 
 target_link_libraries(ForgeInput PUBLIC ForgeCore glfw)
-target_include_directories(ForgeInput PUBLIC ${glm_DIR})
+target_include_directories(ForgeInput PUBLIC ${glm_DIR} ${imgui_DIR})
 
 # ===========================================
 # EVENT LIBRARY - Event system
@@ -427,10 +427,16 @@ target_include_directories(ForgeLayer PUBLIC ${glm_DIR})
 # ===========================================
 forge_add_library(ForgeImGui
         Core/Imgui/ImguiLayer.h
-        Core/Imgui/ImguiLayer.cpp  # Ensure correct case for filename
+        Core/Imgui/ImguiLayer.cpp
+        Core/UI/MainUI.h
+        Core/UI/MainUI.cpp
+        Core/UI/Frames/Console.h
+        Core/UI/Frames/Console.cpp
+        Core/UI/Frames/FpsInspector.h
+        Core/UI/Frames/FpsInspector.cpp
 )
 
-target_compile_definitions(ImGui PRIVATE
+target_compile_definitions(ImGui PUBLIC
         IMGUI_IMPL_OPENGL_LOADER_GLAD
 )
 

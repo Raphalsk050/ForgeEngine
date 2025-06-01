@@ -12,6 +12,7 @@
 #include "Core/Event/Event.h"
 #include "Core/Event/WindowApplicationEvent.h"
 #include "Core/Renderer/Renderer3D.h"
+#include "Core/UI/MainUI.h"
 // #include "Core/Renderer/Renderer3D.h"
 
 namespace ForgeEngine {
@@ -34,7 +35,9 @@ namespace ForgeEngine {
     Renderer3D::Init();
 
     imgui_layer_ = new ImGuiLayer();
-    PushOverlay(imgui_layer_);
+    main_ui_layer_ = new MainUI();
+    PushLayer(imgui_layer_);
+    PushLayer(main_ui_layer_);
   }
 
   Application::~Application() {

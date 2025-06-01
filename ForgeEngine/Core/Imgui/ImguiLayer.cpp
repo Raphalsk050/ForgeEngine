@@ -56,12 +56,10 @@ namespace ForgeEngine
         // Setup Platform/Renderer bindings
         ImGui_ImplGlfw_InitForOpenGL(window, true);
         ImGui_ImplOpenGL3_Init("#version 410");
-        RenderCommand::SetClearColor({0.2f, 0.3f, 0.3f, 1.0f});
     }
 
     void ImGuiLayer::OnUpdate(Timestep ts)
     {
-        //RenderCommand::Clear();
         Layer::OnUpdate(ts);
     }
 
@@ -152,8 +150,8 @@ namespace ForgeEngine
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
         ImGuizmo::BeginFrame();
-        ImGui::ShowDemoWindow();
-        ShowMetricsWindow();
+        //ImGui::ShowDemoWindow();
+        //ShowMetricsWindow();
     }
 
     void ImGuiLayer::End()

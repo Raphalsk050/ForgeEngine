@@ -172,7 +172,6 @@ namespace ForgeEngine
 
     bool Camera3DController::OnMouseScrolled(MouseScrolledEvent& e)
     {
-        FENGINE_CORE_CRITICAL("Window Resized");
         float zoomAmount = e.GetYOffset() * m_ZoomSpeed;
 
         if (m_ControlMode == ControlMode::Orbit)
@@ -192,7 +191,6 @@ namespace ForgeEngine
 
     bool Camera3DController::OnWindowResized(WindowResizeEvent& e)
     {
-        printf("Window Resized\n");
         OnResize(static_cast<float>(e.GetWidth()), static_cast<float>(e.GetHeight()));
         return true;
     }
@@ -229,8 +227,6 @@ namespace ForgeEngine
 
     bool Camera3DController::OnKeyReleased(KeyReleasedEvent& e)
     {
-        //FENGINE_CORE_INFO("Key {} state is: {}",e.GetKeyCode(),pressed);
-        // Update movement state based on keys
         switch (e.GetKeyCode())
         {
         case Key::W:

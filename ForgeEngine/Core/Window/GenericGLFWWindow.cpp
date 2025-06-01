@@ -81,6 +81,7 @@ namespace ForgeEngine {
 
             WindowResizeEvent event(width, height);
             data.EventCallback(event);
+            FENGINE_CORE_INFO("Window Resized ({},{})", width, height);
             glad_glViewport(0, 0, width, height);
         });
 

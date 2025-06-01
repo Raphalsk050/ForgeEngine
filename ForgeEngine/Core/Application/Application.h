@@ -11,6 +11,8 @@
 using namespace std;
 
 namespace ForgeEngine {
+  class MainUI;
+
   struct ApplicationCommandLineArgs {
     int Count = 0;
     char **Args = nullptr;
@@ -68,6 +70,7 @@ namespace ForgeEngine {
     ApplicationSpecification specification_;
     Scope<Window> window_;
     ImGuiLayer *imgui_layer_;
+    MainUI *main_ui_layer_;
     bool running_ = true;
     bool minimized_ = false;
     LayerStack layer_stack_;
