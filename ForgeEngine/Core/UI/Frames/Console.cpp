@@ -1,5 +1,7 @@
 #include "Console.h"
 
+#include <io.h>
+
 #include "imgui.h"
 
 namespace ForgeEngine

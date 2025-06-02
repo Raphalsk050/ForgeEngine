@@ -1,6 +1,7 @@
 #pragma once
 #include <imgui.h>
 #include "Core/Layer/Layer.h"
+#include "Frames/FpsInspector.h"
 
 namespace ForgeEngine
 {
@@ -28,7 +29,10 @@ namespace ForgeEngine
         void RenderTopMenuOptions();
         void OpenConsole();
 
+        void OpenFPSHistory();
+
         Console* console_;
+        FpsInspector* fps_inspector_;
 
     };
 }

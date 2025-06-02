@@ -86,6 +86,11 @@ namespace ForgeEngine
                 {
                     OpenConsole();
                 }
+
+                if (ImGui::MenuItem("FPS History"))
+                {
+                    OpenFPSHistory();
+                }
                 ImGui::EndMenu();
             }
 
@@ -98,5 +103,12 @@ namespace ForgeEngine
         console_ = new Console();
         Application::Get().PushLayer(console_);
         console_->OpenConsole();
+    }
+
+    void MainUI::OpenFPSHistory()
+    {
+        fps_inspector_ = new FpsInspector();
+        Application::Get().PushLayer(fps_inspector_);
+        fps_inspector_->Open();
     }
 }
