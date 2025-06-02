@@ -35,7 +35,7 @@ namespace ForgeEngine
         float time_ = 0.0f;
         float previous_clicked_time_ = 0.0f;
         float new_color_[4] = {};
-        bool camera_movement_enabled_ = true;
+        bool camera_movement_enabled_ = false;
         std::unordered_map<KeyCode, bool> last_key_state_map_;
 
         // debug controls
@@ -48,7 +48,7 @@ namespace ForgeEngine
 
         // Controle de instancing automático
         bool auto_instancing_enabled_ = true;
-        uint32_t instancing_threshold_ = 3; // Mínimo de objetos para usar instancing
+        uint32_t instancing_threshold_ = 1; // Mínimo de objetos para usar instancing
         float previous_instancing_toggle_time_ = 0.0f;
 
         // Configurações de densidade de objetos para teste

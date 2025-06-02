@@ -26,8 +26,6 @@ namespace ForgeEngine
     void NidavellirLayer::OnAttach()
     {
         Layer::OnAttach();
-        auto window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow());
-        //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
         glEnable(GL_DEPTH_TEST);
         glDepthFunc(GL_LEQUAL);
 
@@ -36,10 +34,8 @@ namespace ForgeEngine
         camera_controller_.SetRotation(glm::vec3(0.0f, 0.0f, 0.0f));
 
 
-        // Configurar threshold de instancing (quantos objetos mínimos para usar instancing)
         Renderer3D::SetInstancingThreshold(instancing_threshold_);
 
-        // Habilitar instancing automático
         Renderer3D::EnableAutoInstancing(auto_instancing_enabled_);
     }
 
@@ -180,6 +176,15 @@ namespace ForgeEngine
                 {
                     camera_movement_enabled_ = !camera_movement_enabled_;
                     last_key_state_map_[KeyCode] = true;
+                    auto window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow());
+                    if (camera_movement_enabled_)
+                    {
+                        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+                    }
+                    else
+                    {
+                        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+                    }
                 }
 
                 break;
@@ -329,7 +334,6 @@ namespace ForgeEngine
         ImGui::BulletText("ESC: Exit Application");
 
         ImGui::End();
-
     }
 
     void NidavellirLayer::RenderHelperUI()
@@ -338,7 +342,7 @@ namespace ForgeEngine
 
         ImGui::Separator();
         ImGui::Text("Render Options");
-        if (ImGui::Button("Enable WireFrame", {200,25}))
+        if (ImGui::Button("Enable WireFrame", {200, 25}))
         {
             wireframe_enabled_ = !wireframe_enabled_;
         }
@@ -346,12 +350,12 @@ namespace ForgeEngine
         ImGui::Separator();
 
         ImGui::Text("Debug Options");
-        if (ImGui::Button("Enable Render statics", {200,25}))
+        if (ImGui::Button("Enable Render statics", {200, 25}))
         {
             render_debug_ui_enabled_ = !render_debug_ui_enabled_;
         }
 
-        if (ImGui::Button("Enable Render debug options", {200,25}))
+        if (ImGui::Button("Enable Render debug options", {200, 25}))
         {
             render_debug_options_ui_enabled_ = !render_debug_options_ui_enabled_;
         }
