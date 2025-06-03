@@ -428,12 +428,12 @@ target_include_directories(ForgeLayer PUBLIC ${glm_DIR})
 forge_add_library(ForgeImGui
         Core/Imgui/ImguiLayer.h
         Core/Imgui/ImguiLayer.cpp
-        Core/UI/MainUI.h
-        Core/UI/MainUI.cpp
-        Core/UI/Frames/Console.h
-        Core/UI/Frames/Console.cpp
-        Core/UI/Frames/FpsInspector.h
-        Core/UI/Frames/FpsInspector.cpp
+        Core/UI/Editor/MainUI.h
+        Core/UI/Editor/MainUI.cpp
+        Core/UI/Editor/Frames/Console.h
+        Core/UI/Editor/Frames/Console.cpp
+        Core/UI/Editor/Frames/FpsInspector.h
+        Core/UI/Editor/Frames/FpsInspector.cpp
 )
 
 target_compile_definitions(ImGui PUBLIC

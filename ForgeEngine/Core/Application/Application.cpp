@@ -12,7 +12,7 @@
 #include "Core/Event/Event.h"
 #include "Core/Event/WindowApplicationEvent.h"
 #include "Core/Renderer/Renderer3D.h"
-#include "Core/UI/MainUI.h"
+#include "../UI/Editor/MainUI.h"
 // #include "Core/Renderer/Renderer3D.h"
 
 namespace ForgeEngine {

@@ -10,182 +10,199 @@
 #include "Core/Scene/SceneCamera.h"
 #include "Core/Renderer/Mesh.h"
 
-namespace ForgeEngine {
+namespace ForgeEngine
+{
+    struct IDComponent
+    {
+        UUID ID;
 
-	struct IDComponent
-	{
-		UUID ID;
+        IDComponent() = default;
+        IDComponent(const IDComponent&) = default;
+    };
 
-		IDComponent() = default;
-		IDComponent(const IDComponent&) = default;
-	};
+    struct TagComponent
+    {
+        std::string Tag;
 
-	struct TagComponent
-	{
-		std::string Tag;
+        TagComponent() = default;
+        TagComponent(const TagComponent&) = default;
 
-		TagComponent() = default;
-		TagComponent(const TagComponent&) = default;
-		TagComponent(const std::string& tag)
-			: Tag(tag) {}
-	};
+        TagComponent(const std::string& tag)
+            : Tag(tag)
+        {
+        }
+    };
 
-	struct TransformComponent
-	{
-		glm::vec3 Translation = { 0.0f, 0.0f, 0.0f };
-		glm::vec3 Rotation = { 0.0f, 0.0f, 0.0f };
-		glm::vec3 Scale = { 1.0f, 1.0f, 1.0f };
+    struct TransformComponent
+    {
+        glm::vec3 Translation = {0.0f, 0.0f, 0.0f};
+        glm::vec3 Rotation = {0.0f, 0.0f, 0.0f};
+        glm::vec3 Scale = {1.0f, 1.0f, 1.0f};
 
-		TransformComponent() = default;
-		TransformComponent(const TransformComponent&) = default;
-		TransformComponent(const glm::vec3& translation)
-			: Translation(translation) {}
+        TransformComponent() = default;
+        TransformComponent(const TransformComponent&) = default;
 
-		glm::mat4 GetTransform() const
-		{
-			glm::mat4 rotation = glm::toMat4(glm::quat(Rotation));
+        TransformComponent(const glm::vec3& translation)
+            : Translation(translation)
+        {
+        }
 
-			return glm::translate(glm::mat4(1.0f), Translation)
-				* rotation
-				* glm::scale(glm::mat4(1.0f), Scale);
-		}
-	};
+        glm::mat4 GetTransform() const
+        {
+            glm::mat4 rotation = glm::toMat4(glm::quat(Rotation));
 
-        struct ModelRendererComponent {
-          Ref<Model> Model;
-          Ref<Material> OverrideMaterial;
+            return glm::translate(glm::mat4(1.0f), Translation)
+                * rotation
+                * glm::scale(glm::mat4(1.0f), Scale);
+        }
+    };
 
-          ModelRendererComponent() = default;
-          ModelRendererComponent(const ModelRendererComponent&) = default;
-          ModelRendererComponent(const Ref<ForgeEngine::Model>& model)
-            : Model(model) {}
-        };
+    struct ModelRendererComponent
+    {
+        Ref<Model> Model;
+        Ref<Material> OverrideMaterial;
 
-	struct SpriteRendererComponent
-	{
-		glm::vec4 Color{ 1.0f, 1.0f, 1.0f, 1.0f };
-		Ref<Texture2D> Texture;
-		float TilingFactor = 1.0f;
+        ModelRendererComponent() = default;
+        ModelRendererComponent(const ModelRendererComponent&) = default;
 
-		SpriteRendererComponent() = default;
-		SpriteRendererComponent(const SpriteRendererComponent&) = default;
-		SpriteRendererComponent(const glm::vec4& color)
-			: Color(color) {}
-	};
+        ModelRendererComponent(const Ref<ForgeEngine::Model>& model)
+            : Model(model)
+        {
+        }
+    };
 
-	struct CircleRendererComponent
-	{
-		glm::vec4 Color{ 1.0f, 1.0f, 1.0f, 1.0f };
-		float Thickness = 1.0f;
-		float Fade = 0.005f;
+    struct SpriteRendererComponent
+    {
+        glm::vec4 Color{1.0f, 1.0f, 1.0f, 1.0f};
+        Ref<Texture2D> Texture;
+        float TilingFactor = 1.0f;
 
-		CircleRendererComponent() = default;
-		CircleRendererComponent(const CircleRendererComponent&) = default;
-	};
+        SpriteRendererComponent() = default;
+        SpriteRendererComponent(const SpriteRendererComponent&) = default;
 
-	struct CameraComponent
-	{
-		SceneCamera Camera;
-		bool Primary = true;
-		bool FixedAspectRatio = false;
+        SpriteRendererComponent(const glm::vec4& color)
+            : Color(color)
+        {
+        }
+    };
 
-		CameraComponent() = default;
-		CameraComponent(const CameraComponent&) = default;
-	};
+    struct CircleRendererComponent
+    {
+        glm::vec4 Color{1.0f, 1.0f, 1.0f, 1.0f};
+        float Thickness = 1.0f;
+        float Fade = 0.005f;
 
-	struct ScriptComponent
-	{
-		std::string ClassName;
+        CircleRendererComponent() = default;
+        CircleRendererComponent(const CircleRendererComponent&) = default;
+    };
 
-		ScriptComponent() = default;
-		ScriptComponent(const ScriptComponent&) = default;
-	};
+    struct CameraComponent
+    {
+        SceneCamera Camera;
+        bool Primary = true;
+        bool FixedAspectRatio = false;
 
-	// Forward declaration
-	class ScriptableEntity;
+        CameraComponent() = default;
+        CameraComponent(const CameraComponent&) = default;
+    };
 
-	struct NativeScriptComponent
-	{
-		ScriptableEntity* Instance = nullptr;
+    struct ScriptComponent
+    {
+        std::string ClassName;
 
-		ScriptableEntity*(*InstantiateScript)();
-		void (*DestroyScript)(NativeScriptComponent*);
+        ScriptComponent() = default;
+        ScriptComponent(const ScriptComponent&) = default;
+    };
 
-		template<typename T>
-		void Bind()
-		{
-			InstantiateScript = []() { return static_cast<ScriptableEntity*>(new T()); };
-			DestroyScript = [](NativeScriptComponent* nsc) { delete nsc->Instance; nsc->Instance = nullptr; };
-		}
-	};
+    // Forward declaration
+    class ScriptableEntity;
 
-	// Physics
+    struct NativeScriptComponent
+    {
+        ScriptableEntity* Instance = nullptr;
 
-	struct Rigidbody2DComponent
-	{
-		enum class BodyType { Static = 0, Dynamic, Kinematic };
-		BodyType Type = BodyType::Static;
-		bool FixedRotation = false;
+        ScriptableEntity*(*InstantiateScript)();
+        void (*DestroyScript)(NativeScriptComponent*);
 
-		// Storage for runtime
-		void* RuntimeBody = nullptr;
+        template <typename T>
+        void Bind()
+        {
+            InstantiateScript = []() { return static_cast<ScriptableEntity*>(new T()); };
+            DestroyScript = [](NativeScriptComponent* nsc)
+            {
+                delete nsc->Instance;
+                nsc->Instance = nullptr;
+            };
+        }
+    };
 
-		Rigidbody2DComponent() = default;
-		Rigidbody2DComponent(const Rigidbody2DComponent&) = default;
-	};
+    // Physics
 
-	struct BoxCollider2DComponent
-	{
-		glm::vec2 Offset = { 0.0f, 0.0f };
-		glm::vec2 Size = { 0.5f, 0.5f };
+    struct Rigidbody2DComponent
+    {
+        enum class BodyType { Static = 0, Dynamic, Kinematic };
 
-		float Density = 1.0f;
-		float Friction = 0.5f;
-		float Restitution = 0.0f;
-		float RestitutionThreshold = 0.5f;
+        BodyType Type = BodyType::Static;
+        bool FixedRotation = false;
 
-		// Storage for runtime
-		void* RuntimeFixture = nullptr;
+        // Storage for runtime
+        void* RuntimeBody = nullptr;
 
-		BoxCollider2DComponent() = default;
-		BoxCollider2DComponent(const BoxCollider2DComponent&) = default;
-	};
+        Rigidbody2DComponent() = default;
+        Rigidbody2DComponent(const Rigidbody2DComponent&) = default;
+    };
 
-	struct CircleCollider2DComponent
-	{
-		glm::vec2 Offset = { 0.0f, 0.0f };
-		float Radius = 0.5f;
+    struct BoxCollider2DComponent
+    {
+        glm::vec2 Offset = {0.0f, 0.0f};
+        glm::vec2 Size = {0.5f, 0.5f};
 
-		float Density = 1.0f;
-		float Friction = 0.5f;
-		float Restitution = 0.0f;
-		float RestitutionThreshold = 0.5f;
+        float Density = 1.0f;
+        float Friction = 0.5f;
+        float Restitution = 0.0f;
+        float RestitutionThreshold = 0.5f;
 
-		// Storage for runtime
-		void* RuntimeFixture = nullptr;
+        // Storage for runtime
+        void* RuntimeFixture = nullptr;
 
-		CircleCollider2DComponent() = default;
-		CircleCollider2DComponent(const CircleCollider2DComponent&) = default;
-	};
+        BoxCollider2DComponent() = default;
+        BoxCollider2DComponent(const BoxCollider2DComponent&) = default;
+    };
 
-	/*struct TextComponent
-	{
-		std::string TextString;
-		//Ref<Font> FontAsset = Font::GetDefault();
-		glm::vec4 Color{ 1.0f };
-		float Kerning = 0.0f;
-		float LineSpacing = 0.0f;
-	};*/
+    struct CircleCollider2DComponent
+    {
+        glm::vec2 Offset = {0.0f, 0.0f};
+        float Radius = 0.5f;
 
-	template<typename... Component>
-	struct ComponentGroup
-	{
-	};
+        float Density = 1.0f;
+        float Friction = 0.5f;
+        float Restitution = 0.0f;
+        float RestitutionThreshold = 0.5f;
 
-	using AllComponents = 
-		ComponentGroup<TransformComponent, SpriteRendererComponent,
-			CircleRendererComponent, CameraComponent, ScriptComponent,
-			NativeScriptComponent, Rigidbody2DComponent, BoxCollider2DComponent,
-			CircleCollider2DComponent/*, TextComponent*/>;
+        // Storage for runtime
+        void* RuntimeFixture = nullptr;
 
+        CircleCollider2DComponent() = default;
+        CircleCollider2DComponent(const CircleCollider2DComponent&) = default;
+    };
+
+    /*struct TextComponent
+    {
+        std::string TextString;
+        //Ref<Font> FontAsset = Font::GetDefault();
+        glm::vec4 Color{ 1.0f };
+        float Kerning = 0.0f;
+        float LineSpacing = 0.0f;
+    };*/
+
+    template <typename... Component>
+    struct ComponentGroup
+    {
+    };
+
+    using AllComponents =
+    ComponentGroup<TransformComponent, SpriteRendererComponent,
+                   CircleRendererComponent, CameraComponent, ScriptComponent,
+                   NativeScriptComponent, Rigidbody2DComponent, BoxCollider2DComponent,
+                   CircleCollider2DComponent/*, TextComponent*/>;
 }
