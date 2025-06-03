@@ -68,25 +68,34 @@ namespace ForgeEngine
 
     void FpsInspector::PlotGraph()
     {
-        ImGui::SetNextWindowSizeConstraints(window_size_, window_size_);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(10.0f, 10.0f));
+        ImGui::SetNextWindowSizeConstraints(ImVec2(300.0f, 300.0f), ImVec2(5000.0f, 1000.0f));
         ImGui::Begin("FPSHistory", nullptr, window_flags);
+        auto plot_width = ImGui::GetWindowSize().x - 50.0f;
+        auto plot_height = 150.0f;
+        auto text_height = ImGui::GetTextLineHeight();
+        auto window_height = (ImGui::GetWindowSize().y - (plot_height + 2.0f * text_height)) * 0.5f;
+        plot_size_ = ImVec2(plot_width, plot_height);
+
+        ImGui::PopStyleVar(3);
 
         if (!frames_.empty())
         {
             std::vector<float> fps_smooth = SmoothValues(frames_, 1.0f);
+            ImGui::SetCursorPosY(ImGui::GetCursorPosX() + window_height);
             ImGui::BeginGroup();
             int last_fps_amount = static_cast<int>(fps_smooth.back());
             int first_fps_amount = static_cast<int>(fps_smooth.front());
 
-            const char* avg_fps_text = std::to_string((last_fps_amount + first_fps_amount)/2).c_str();
+            const char* avg_fps_text = std::to_string((last_fps_amount + first_fps_amount) / 2).c_str();
 
             ImGui::PlotLines("##", fps_smooth.data(), max_frame_values_amount_window_, 0, nullptr, 0.0f, 2000.0f, plot_size_);
-
             ImGui::SetNextItemWidth(plot_size_.x);
-            ImGui::SliderInt("##", &max_frame_values_amount_window_, 30, 50);
+            ImGui::SliderInt("##", &max_frame_values_amount_window_, 30, 1000);
 
             ImGui::BeginGroup();
-
             ImGui::Text("0");
             ImGui::SameLine(plot_size_.x - ImGui::CalcTextSize(avg_fps_text).x);
             ImGui::Text(avg_fps_text);
