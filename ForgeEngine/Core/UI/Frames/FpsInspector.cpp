@@ -27,14 +27,23 @@ namespace ForgeEngine
     void FpsInspector::OnUpdate(Timestep ts)
     {
         Layer::OnUpdate(ts);
-        // only updates after update_tick_ms_
+
+        /*// only updates after update_tick_ms_
         int app_time_ms = Time::GetTime() * 1000.0f;
-        if (app_time_ms % update_tick_ms_ != 0) return;
+        if (app_time_ms % update_tick_ms_ != 0) return;*/
 
         float frame = round(1.0f / ts.GetSeconds());
-        float avgFPS = (last_frame_amount_ + frame) / 2.0f;
+
+        if (passed_frames_ >= amount_of_frames_to_get_avg_)
+        {
+            UpdateFPSHistory(GetAvgFPS());
+            passed_frames_ = 0;
+            return;
+        }
+
+        temp_frames_[passed_frames_] = frame;
+        passed_frames_++;
         last_frame_amount_ = frame;
-        UpdateFPSHistory(avgFPS);
     }
 
     void FpsInspector::OnImGuiRender()
@@ -87,9 +96,8 @@ namespace ForgeEngine
             ImGui::SetCursorPosY(ImGui::GetCursorPosX() + window_height);
             ImGui::BeginGroup();
             int last_fps_amount = static_cast<int>(fps_smooth.back());
-            int first_fps_amount = static_cast<int>(fps_smooth.front());
 
-            const char* avg_fps_text = std::to_string((last_fps_amount + first_fps_amount) / 2).c_str();
+            const char* last_fps_text = std::to_string(last_fps_amount).c_str();
 
             ImGui::PlotLines("##", fps_smooth.data(), max_frame_values_amount_window_, 0, nullptr, 0.0f, 2000.0f, plot_size_);
             ImGui::SetNextItemWidth(plot_size_.x);
@@ -97,14 +105,25 @@ namespace ForgeEngine
 
             ImGui::BeginGroup();
             ImGui::Text("0");
-            ImGui::SameLine(plot_size_.x - ImGui::CalcTextSize(avg_fps_text).x);
-            ImGui::Text(avg_fps_text);
+            ImGui::SameLine(plot_size_.x - ImGui::CalcTextSize(last_fps_text).x);
+            ImGui::Text(last_fps_text);
 
             ImGui::EndGroup();
             ImGui::EndGroup();
         }
 
         ImGui::End();
+    }
+
+    float FpsInspector::GetAvgFPS()
+    {
+        float avg_fps = temp_frames_[0];
+        for (int i = 1; i < std::size(temp_frames_); i++)
+        {
+            avg_fps += temp_frames_[i];
+        }
+        avg_fps /= std::size(temp_frames_);
+        return avg_fps;
     }
 
     std::vector<float> FpsInspector::SmoothValues(const std::vector<float>& values, float alpha)
