@@ -98,8 +98,9 @@ namespace ForgeEngine
             int last_fps_amount = static_cast<int>(fps_smooth.back());
 
             const char* last_fps_text = std::to_string(last_fps_amount).c_str();
+            int offset = max_frame_values_amount_window_ / 1000 - 1;
 
-            ImGui::PlotLines("##", fps_smooth.data(), max_frame_values_amount_window_, 0, nullptr, 0.0f, 2000.0f, plot_size_);
+            ImGui::PlotLines("##", fps_smooth.data(), 1000, offset, nullptr, 0.0f, 2000.0f, plot_size_);
             ImGui::SetNextItemWidth(plot_size_.x);
             ImGui::SliderInt("##", &max_frame_values_amount_window_, 30, 1000);
 

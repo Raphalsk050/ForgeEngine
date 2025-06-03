@@ -280,9 +280,6 @@ namespace ForgeEngine
         FENGINE_PROFILE_FUNCTION();
         EarlyDepthTestManager::Initialize();
 
-        FENGINE_CORE_CRITICAL("Current Directory: {}",
-                              std::filesystem::current_path().string());
-
         s_Data.MeshShader = Shader::Create(
             "../ForgeEngine/Assets/Shaders/Renderer3D_Mesh.glsl");
         s_Data.WireframeShader = Shader::Create(

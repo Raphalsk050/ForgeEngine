@@ -538,8 +538,8 @@ target_sources(ForgeEngine INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/ForgeEngine.h)
 
 add_custom_command(TARGET ForgeApplication POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory
-        ${CMAKE_SOURCE_DIR}/ForgeEngine/Assets/Shaders
-        $<TARGET_FILE_DIR:ForgeApplication>/Assets/Shaders
+        ${CMAKE_SOURCE_DIR}/ForgeEngine/Assets
+        $<TARGET_FILE_DIR:ForgeApplication>/Assets
 )
 
 # ===========================================

@@ -32,6 +32,11 @@ namespace ForgeEngine
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
         ImGuiIO& io = ImGui::GetIO();
+
+        io.Fonts->AddFontFromFileTTF(font_path_, 18.0f);
+
+        io.Fonts->Build();
+
         (void)io;
         io.ConfigFlags |=
             ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls

@@ -26,6 +26,9 @@ namespace ForgeEngine {
         uint32_t GetActiveWidgetID() const;
 
     private:
+        // const char* font_path_ = "Assets/Fonts/Inter/Inter-Regular.ttf";
+        //const char* font_path_ = "../ForgeEngine/Assets/Fonts/Inter/Inter-Regular.ttf";
+        const char* font_path_ = "../ForgeEngine/Assets/Fonts/JetBrains/JetBrainsMonoNerdFont-Regular.ttf";
         bool block_events_ = true;
     };
 }  // namespace BEngine
