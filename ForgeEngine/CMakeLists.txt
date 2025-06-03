@@ -126,6 +126,7 @@ set(FORGE_THIRD_PARTY_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty)
 set(glfw_DIR ${FORGE_THIRD_PARTY_DIR}/glfw)
 set(glad_DIR ${FORGE_THIRD_PARTY_DIR}/glad)
 set(glm_DIR ${FORGE_THIRD_PARTY_DIR}/glm)
+set(entt_DIR ${FORGE_THIRD_PARTY_DIR}/entt)
 set(spdlog_DIR ${FORGE_THIRD_PARTY_DIR}/spdlog)
 set(imgui_DIR ${FORGE_THIRD_PARTY_DIR}/imgui)
 set(ImGuizmo_DIR ${FORGE_THIRD_PARTY_DIR}/ImGuizmo)
@@ -137,6 +138,7 @@ add_subdirectory(${glad_DIR})
 add_subdirectory(${glfw_DIR})
 add_subdirectory(${glm_DIR})
 add_subdirectory(${spdlog_DIR})
+add_subdirectory(${entt_DIR})
 add_subdirectory(${imgui_DIR})
 add_subdirectory(${ImGuizmo_DIR})
 
@@ -328,6 +330,7 @@ target_link_libraries(ForgeRenderer
         PUBLIC
         ForgeRendererBase
         ${FORGE_SHADER_LIBS}
+        Entt
 )
 
 if(EXISTS ${spirv_DIR})
@@ -393,6 +396,7 @@ target_link_libraries(ForgeCamera
 # ===========================================
 # SCENE LIBRARY - Scene management
 # ===========================================
+
 forge_add_library(ForgeScene
         Core/Scene/Components.h
         Core/Scene/SceneCamera.h
@@ -403,6 +407,7 @@ target_link_libraries(ForgeScene
         PUBLIC
         ForgeCamera
         ForgeRenderer
+        Entt
 )
 
 # ===========================================

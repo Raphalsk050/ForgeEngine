@@ -1,5 +1,6 @@
 #pragma once
 #include "Core/Camera/Camera.h"
+#include "entt.hpp"
 
 namespace ForgeEngine {
 
@@ -42,6 +43,8 @@ namespace ForgeEngine {
 
 		float m_OrthographicSize = 10.0f;
 		float m_OrthographicNear = -1.0f, m_OrthographicFar = 1.0f;
+
+		entt::entity m_ViewportEntity;
 
 		float m_AspectRatio = 0.0f;
 	};
