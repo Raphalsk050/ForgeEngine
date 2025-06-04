@@ -18,17 +18,20 @@ fi
 
 install_deps() {
     if command -v apt-get >/dev/null 2>&1; then
-        $SUDO apt-get update
+
+        $SUDO apt-get update || true
         $SUDO apt-get install -y \
             clang build-essential cmake ninja-build git \
             libgl1-mesa-dev libx11-dev libxrandr-dev libxinerama-dev \
-            libxcursor-dev libxi-dev libxkbcommon-dev libwayland-dev xorg-dev
+            libxcursor-dev libxi-dev libxkbcommon-dev libwayland-dev xorg-dev || true
+
     elif command -v dnf >/dev/null 2>&1; then
         $SUDO dnf install -y \
             clang gcc-c++ cmake ninja-build git \
             mesa-libGL-devel libX11-devel libXrandr-devel \
             libXinerama-devel libXcursor-devel libXi-devel \
-            libxkbcommon-devel wayland-devel
+            libxkbcommon-devel wayland-devel || true
+
     else
         echo "Unsupported package manager. Please install dependencies manually." >&2
     fi
