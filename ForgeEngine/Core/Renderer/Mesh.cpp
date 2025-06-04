@@ -2,6 +2,7 @@
 
 #define _USE_MATH_DEFINES
 #include <cmath>
+#include <unordered_map>
 
 #include "VertexArray.h"
 
@@ -57,49 +58,100 @@ Ref<Mesh> Mesh::CreateCube(float size) {
     { ShaderDataType::Float2, "a_TexCoord" }
   };
 
-  // Create cube vertices
-  // This is a simplified cube with positions, normals, tangents, and texture coordinates
-  float halfSize = size * 0.5f;
-  std::vector<float> vertices = {
-    // Front face - each vertex has position (3), normal (3), tangent (3), texcoord (2)
-    -halfSize, -halfSize,  halfSize,  0.0f, 0.0f, 1.0f,  1.0f, 0.0f, 0.0f,  0.0f, 0.0f, // bottom-left
-     halfSize, -halfSize,  halfSize,  0.0f, 0.0f, 1.0f,  1.0f, 0.0f, 0.0f,  1.0f, 0.0f, // bottom-right
-     halfSize,  halfSize,  halfSize,  0.0f, 0.0f, 1.0f,  1.0f, 0.0f, 0.0f,  1.0f, 1.0f, // top-right
-    -halfSize,  halfSize,  halfSize,  0.0f, 0.0f, 1.0f,  1.0f, 0.0f, 0.0f,  0.0f, 1.0f, // top-left
+  struct CubeVertex {
+    glm::vec3 Position;
+    glm::vec3 Normal;
+    glm::vec3 Tangent;
+    glm::vec2 TexCoord;
 
-    // Back face
-    -halfSize, -halfSize, -halfSize,  0.0f, 0.0f, -1.0f, -1.0f, 0.0f, 0.0f,  1.0f, 0.0f, // bottom-left
-    -halfSize,  halfSize, -halfSize,  0.0f, 0.0f, -1.0f, -1.0f, 0.0f, 0.0f,  1.0f, 1.0f, // top-left
-     halfSize,  halfSize, -halfSize,  0.0f, 0.0f, -1.0f, -1.0f, 0.0f, 0.0f,  0.0f, 1.0f, // top-right
-     halfSize, -halfSize, -halfSize,  0.0f, 0.0f, -1.0f, -1.0f, 0.0f, 0.0f,  0.0f, 0.0f, // bottom-right
-
-    // Left face
-    -halfSize, -halfSize, -halfSize, -1.0f, 0.0f, 0.0f,  0.0f, 0.0f, -1.0f,  0.0f, 0.0f, // bottom-left
-    -halfSize, -halfSize,  halfSize, -1.0f, 0.0f, 0.0f,  0.0f, 0.0f, -1.0f,  1.0f, 0.0f, // bottom-right
-    -halfSize,  halfSize,  halfSize, -1.0f, 0.0f, 0.0f,  0.0f, 0.0f, -1.0f,  1.0f, 1.0f, // top-right
-    -halfSize,  halfSize, -halfSize, -1.0f, 0.0f, 0.0f,  0.0f, 0.0f, -1.0f,  0.0f, 1.0f, // top-left
-
-    // Right face
-     halfSize, -halfSize,  halfSize,  1.0f, 0.0f, 0.0f,  0.0f, 0.0f, 1.0f,   0.0f, 0.0f, // bottom-left
-     halfSize, -halfSize, -halfSize,  1.0f, 0.0f, 0.0f,  0.0f, 0.0f, 1.0f,   1.0f, 0.0f, // bottom-right
-     halfSize,  halfSize, -halfSize,  1.0f, 0.0f, 0.0f,  0.0f, 0.0f, 1.0f,   1.0f, 1.0f, // top-right
-     halfSize,  halfSize,  halfSize,  1.0f, 0.0f, 0.0f,  0.0f, 0.0f, 1.0f,   0.0f, 1.0f, // top-left
-
-    // Bottom face
-    -halfSize, -halfSize, -halfSize,  0.0f, -1.0f, 0.0f,  1.0f, 0.0f, 0.0f,  0.0f, 0.0f, // bottom-left
-     halfSize, -halfSize, -halfSize,  0.0f, -1.0f, 0.0f,  1.0f, 0.0f, 0.0f,  1.0f, 0.0f, // bottom-right
-     halfSize, -halfSize,  halfSize,  0.0f, -1.0f, 0.0f,  1.0f, 0.0f, 0.0f,  1.0f, 1.0f, // top-right
-    -halfSize, -halfSize,  halfSize,  0.0f, -1.0f, 0.0f,  1.0f, 0.0f, 0.0f,  0.0f, 1.0f, // top-left
-
-    // Top face
-    -halfSize,  halfSize,  halfSize,  0.0f, 1.0f, 0.0f,  1.0f, 0.0f, 0.0f,   0.0f, 0.0f, // bottom-left
-     halfSize,  halfSize,  halfSize,  0.0f, 1.0f, 0.0f,  1.0f, 0.0f, 0.0f,   1.0f, 0.0f, // bottom-right
-     halfSize,  halfSize, -halfSize,  0.0f, 1.0f, 0.0f,  1.0f, 0.0f, 0.0f,   1.0f, 1.0f, // top-right
-    -halfSize,  halfSize, -halfSize,  0.0f, 1.0f, 0.0f,  1.0f, 0.0f, 0.0f,   0.0f, 1.0f  // top-left
+    bool operator==(const CubeVertex& other) const {
+      return Position == other.Position && Normal == other.Normal &&
+             Tangent == other.Tangent && TexCoord == other.TexCoord;
+    }
   };
 
-  // Create indices for the cube
-  std::vector<uint32_t> indices = {
+  struct CubeVertexHash {
+    std::size_t operator()(const CubeVertex& v) const noexcept {
+      auto h1 = std::hash<float>{}(v.Position.x);
+      auto h2 = std::hash<float>{}(v.Position.y);
+      auto h3 = std::hash<float>{}(v.Position.z);
+      auto h4 = std::hash<float>{}(v.Normal.x);
+      auto h5 = std::hash<float>{}(v.Normal.y);
+      auto h6 = std::hash<float>{}(v.Normal.z);
+      auto h7 = std::hash<float>{}(v.Tangent.x);
+      auto h8 = std::hash<float>{}(v.Tangent.y);
+      auto h9 = std::hash<float>{}(v.Tangent.z);
+      auto h10 = std::hash<float>{}(v.TexCoord.x);
+      auto h11 = std::hash<float>{}(v.TexCoord.y);
+      // Combine hashes
+      return ((((((((((h1 ^ (h2 << 1)) ^ (h3 << 1)) ^ (h4 << 1)) ^ (h5 << 1)) ^
+                     (h6 << 1)) ^
+                    (h7 << 1)) ^
+                   (h8 << 1)) ^
+                  (h9 << 1)) ^
+                 (h10 << 1)) ^
+                (h11 << 1));
+    }
+  };
+
+  // Create cube vertices with explicit attributes
+  float halfSize = size * 0.5f;
+  std::vector<CubeVertex> initialVertices = {
+    // Front face
+    {{-halfSize, -halfSize, halfSize}, {0.0f, 0.0f, 1.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
+    {{halfSize, -halfSize, halfSize}, {0.0f, 0.0f, 1.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
+    {{halfSize, halfSize, halfSize}, {0.0f, 0.0f, 1.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 1.0f}},
+    {{-halfSize, halfSize, halfSize}, {0.0f, 0.0f, 1.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f}},
+
+    // Back face
+    {{-halfSize, -halfSize, -halfSize}, {0.0f, 0.0f, -1.0f}, {-1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
+    {{-halfSize, halfSize, -halfSize}, {0.0f, 0.0f, -1.0f}, {-1.0f, 0.0f, 0.0f}, {1.0f, 1.0f}},
+    {{halfSize, halfSize, -halfSize}, {0.0f, 0.0f, -1.0f}, {-1.0f, 0.0f, 0.0f}, {0.0f, 1.0f}},
+    {{halfSize, -halfSize, -halfSize}, {0.0f, 0.0f, -1.0f}, {-1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
+
+    // Left face
+    {{-halfSize, -halfSize, -halfSize}, {-1.0f, 0.0f, 0.0f}, {0.0f, 0.0f, -1.0f}, {0.0f, 0.0f}},
+    {{-halfSize, -halfSize, halfSize}, {-1.0f, 0.0f, 0.0f}, {0.0f, 0.0f, -1.0f}, {1.0f, 0.0f}},
+    {{-halfSize, halfSize, halfSize}, {-1.0f, 0.0f, 0.0f}, {0.0f, 0.0f, -1.0f}, {1.0f, 1.0f}},
+    {{-halfSize, halfSize, -halfSize}, {-1.0f, 0.0f, 0.0f}, {0.0f, 0.0f, -1.0f}, {0.0f, 1.0f}},
+
+    // Right face
+    {{halfSize, -halfSize, halfSize}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}},
+    {{halfSize, -halfSize, -halfSize}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 0.0f}},
+    {{halfSize, halfSize, -halfSize}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
+    {{halfSize, halfSize, halfSize}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
+
+    // Bottom face
+    {{-halfSize, -halfSize, -halfSize}, {0.0f, -1.0f, 0.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
+    {{halfSize, -halfSize, -halfSize}, {0.0f, -1.0f, 0.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
+    {{halfSize, -halfSize, halfSize}, {0.0f, -1.0f, 0.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 1.0f}},
+    {{-halfSize, -halfSize, halfSize}, {0.0f, -1.0f, 0.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f}},
+
+    // Top face
+    {{-halfSize, halfSize, halfSize}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
+    {{halfSize, halfSize, halfSize}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
+    {{halfSize, halfSize, -halfSize}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 1.0f}},
+    {{-halfSize, halfSize, -halfSize}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f}},
+  };
+
+  // Deduplicate vertices if necessary
+  std::vector<CubeVertex> uniqueVertices;
+  std::vector<uint32_t> remap;
+  std::unordered_map<CubeVertex, uint32_t, CubeVertexHash> lookup;
+
+  for (const auto& v : initialVertices) {
+    auto it = lookup.find(v);
+    if (it != lookup.end()) {
+      remap.push_back(it->second);
+    } else {
+      uint32_t index = uniqueVertices.size();
+      uniqueVertices.push_back(v);
+      lookup[v] = index;
+      remap.push_back(index);
+    }
+  }
+
+  std::vector<uint32_t> cubeIndices = {
     // Front face
     0, 1, 2, 2, 3, 0,
 
@@ -119,13 +171,34 @@ Ref<Mesh> Mesh::CreateCube(float size) {
     20, 21, 22, 22, 23, 20
   };
 
-  // Set up the mesh
-  Ref<VertexBuffer> vertexBuffer = VertexBuffer::Create(vertices.data(), vertices.size() * sizeof(float));
+  // Remap indices to the deduplicated vertex list
+  for (auto& idx : cubeIndices) {
+    idx = remap[idx];
+  }
+
+  // Flatten vertex data to floats to avoid padding issues
+  std::vector<float> vertexData;
+  vertexData.reserve(uniqueVertices.size() * 11);
+  for (const auto& v : uniqueVertices) {
+    vertexData.push_back(v.Position.x);
+    vertexData.push_back(v.Position.y);
+    vertexData.push_back(v.Position.z);
+    vertexData.push_back(v.Normal.x);
+    vertexData.push_back(v.Normal.y);
+    vertexData.push_back(v.Normal.z);
+    vertexData.push_back(v.Tangent.x);
+    vertexData.push_back(v.Tangent.y);
+    vertexData.push_back(v.Tangent.z);
+    vertexData.push_back(v.TexCoord.x);
+    vertexData.push_back(v.TexCoord.y);
+  }
+
+  Ref<VertexBuffer> vertexBuffer = VertexBuffer::Create(vertexData.data(), vertexData.size() * sizeof(float));
   vertexBuffer->SetLayout(layout);
   mesh->SetVertexBuffer(vertexBuffer);
-  mesh->m_VertexCount = 24; // 6 faces * 4 vertices per face
+  mesh->m_VertexCount = uniqueVertices.size();
 
-  mesh->SetIndices(indices);
+  mesh->SetIndices(cubeIndices);
 
   return mesh;
 }
