@@ -27,7 +27,7 @@ namespace ForgeEngine
 
         // Static factory methods for primitive creation
         static Ref<Mesh> CreateCube(float size = 1.0f);
-        static Ref<Mesh> CreateSphere(float radius = 0.5f, uint32_t segmentsX = 16, uint32_t segmentsY = 16);
+        static Ref<Mesh> CreateSphere(float radius = 0.5f, uint32_t segmentsX = 8, uint32_t segmentsY = 8);
         static Ref<Mesh> CreateCylinder(float radius = 0.5f, float height = 1.0f, uint32_t segments = 16);
         static Ref<Mesh> CreatePlane(float width = 1.0f, float height = 1.0f);
 

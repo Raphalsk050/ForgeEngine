@@ -90,27 +90,19 @@ namespace ForgeEngine
 
         for (int i = 0; i < cube_count_; i++)
         {
-            float angle = (float)i / (float)cube_count_ * 2.0f * 3.14159f;
-            int a = i % 10;
-            float radius = 10.0f + a;
-            glm::vec3 cubePos = glm::vec3(
-                cos(angle) * radius,
-                1.0f,
-                sin(angle) * radius
-            );
-
-            glm::vec4 cubeColor = glm::vec4(
-                abs(sin(angle)),
-                0.5f,
-                abs(cos(angle)),
-                1.0f
-            );
-
-            Renderer3D::DrawCube(cubePos, glm::vec3(0.5f), cubeColor, i);
+            for (int j = 0; j < cube_count_; j++)
+            {
+                for (int k = 0; k < cube_count_; k++)
+                {
+                    glm::vec3 cubePos = glm::vec3(i, k, j);
+                    glm::vec4 cubeColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+                    Renderer3D::DrawCube(cubePos, glm::vec3(0.5f), cubeColor, i);
+                }
+            }
         }
 
 
-        for (int i = 0; i < sphere_count_; i++)
+        /*for (int i = 0; i < sphere_count_; i++)
         {
             float angle = (float)i / (float)sphere_count_ * 2.0f * 3.14159f;
             int a = i % 20;
@@ -131,7 +123,7 @@ namespace ForgeEngine
             // float sphereRadius = 0.3f + sin(time_ + i) * 0.2f;
             float sphereRadius = 0.3f;
             Renderer3D::DrawSphere(spherePos, sphereRadius, sphereColor, 2000 + i);
-        }
+        }*/
 
         Renderer3D::EndScene();
         framebuffer_->Unbind();
