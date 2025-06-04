@@ -140,6 +140,18 @@ namespace ForgeEngine
         }
     };
 
+    struct MeshKey
+    {
+        Ref<Mesh> MeshPtr;
+        Ref<Material> MaterialPtr;
+
+        bool operator==(const MeshKey& other) const
+        {
+            return MeshPtr.get() == other.MeshPtr.get()
+                && MaterialPtr.get() == other.MaterialPtr.get();
+        }
+    };
+
     class Renderer3D
     {
     public:
@@ -272,7 +284,6 @@ namespace ForgeEngine
 
         // Helpers para agrupamento
         static bool ShouldUseInstancing(const std::vector<RenderItem>& items);
-        static std::string GetMeshKey(Ref<Mesh> mesh, Ref<Material> material);
 
         // Função helper para culling centralizado (mantida)
         friend bool PerformCulling(int entityID, const glm::mat4& transform,
@@ -283,3 +294,17 @@ namespace ForgeEngine
                                      Ref<Material> material, int entityID);
     };
 } // namespace ForgeEngine
+
+namespace std
+{
+    template <>
+    struct hash<ForgeEngine::MeshKey>
+    {
+        size_t operator()(const ForgeEngine::MeshKey& key) const noexcept
+        {
+            size_t h1 = std::hash<const void*>{}(key.MeshPtr.get());
+            size_t h2 = std::hash<const void*>{}(key.MaterialPtr.get());
+            return h1 ^ (h2 << 1);
+        }
+    };
+} // namespace std
