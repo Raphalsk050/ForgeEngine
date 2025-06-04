@@ -392,8 +392,8 @@ Ref<Mesh> Mesh::CreatePlane(float width, float height) {
 
   // Create plane indices
   std::vector<uint32_t> indices = {
-    0, 1, 2,
-    2, 3, 0
+    1, 0, 2,
+    2, 0, 3
   };
 
   // Set up the mesh
