@@ -270,6 +270,10 @@ namespace ForgeEngine
         static void RenderInstancedBatch(const std::vector<RenderItem>& items);
         static void RenderIndividualItem(const RenderItem& item);
 
+#ifdef FENGINE_OCCLUSION_CULLING
+        static void PerformOcclusionQueries();
+#endif
+
         // Helpers para agrupamento
         static bool ShouldUseInstancing(const std::vector<RenderItem>& items);
         static std::string GetMeshKey(Ref<Mesh> mesh, Ref<Material> material);

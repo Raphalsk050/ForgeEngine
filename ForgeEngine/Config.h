@@ -10,6 +10,9 @@
 // to enable the culling debug
 //#define FENGINE_CULLING_DEBUG
 
+// enable occlusion culling
+//#define FENGINE_OCCLUSION_CULLING
+
 // to debug the frustum information
 //#define FENGINE_DEBUG_FRUSTUM
 

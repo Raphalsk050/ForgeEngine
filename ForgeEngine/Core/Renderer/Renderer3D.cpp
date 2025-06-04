@@ -60,6 +60,10 @@ namespace ForgeEngine
             glm::vec3 BoundingBoxMax;
             float BoundingSphereRadius;
             bool WasVisible = true;
+#ifdef FENGINE_OCCLUSION_CULLING
+            GLuint QueryID = 0;
+            bool IsVisible = true;
+#endif
         };
 
         std::unordered_map<int, EntityCullingData> EntityCullingInfo;
@@ -349,6 +353,14 @@ namespace ForgeEngine
         s_Data.LightUniformBuffer->SetData(&s_Data.LightBuffer,
                                            sizeof(Renderer3DData::LightData));
 
+#ifdef FENGINE_OCCLUSION_CULLING
+        for (auto& [id, data] : s_Data.EntityCullingInfo)
+        {
+            if (data.QueryID == 0)
+                glGenQueries(1, &data.QueryID);
+        }
+#endif
+
         FENGINE_CORE_INFO("Renderer3D initialized successfully with hybrid "
             "instancing system");
     }
@@ -363,6 +375,14 @@ namespace ForgeEngine
             s_Data.InstanceRenderer->Shutdown();
             s_Data.InstanceRenderer.reset();
         }
+
+#ifdef FENGINE_OCCLUSION_CULLING
+        for (auto& [id, data] : s_Data.EntityCullingInfo)
+        {
+            if (data.QueryID)
+                glDeleteQueries(1, &data.QueryID);
+        }
+#endif
 
         delete[] s_Data.LineVertexBufferBase;
     }
@@ -421,6 +441,10 @@ namespace ForgeEngine
     {
         FENGINE_PROFILE_FUNCTION();
 
+#ifdef FENGINE_OCCLUSION_CULLING
+        PerformOcclusionQueries();
+#endif
+
         s_Data.Stats.MeshCount = s_Data.TotalMeshCount;
         s_Data.Stats.VisibleMeshCount = s_Data.VisibleMeshCount;
         s_Data.Stats.CulledMeshCount
@@ -471,6 +495,10 @@ namespace ForgeEngine
             // If auto instancing is disabled, render everything individually
             for (const auto& item : s_Data.RenderQueue)
             {
+#ifdef FENGINE_OCCLUSION_CULLING
+                if (!s_Data.EntityCullingInfo[item.EntityID].IsVisible)
+                    continue;
+#endif
                 RenderIndividualItem(item);
             }
             return;
@@ -479,6 +507,10 @@ namespace ForgeEngine
         // Group items by mesh and material
         for (const auto& item : s_Data.RenderQueue)
         {
+#ifdef FENGINE_OCCLUSION_CULLING
+            if (!s_Data.EntityCullingInfo[item.EntityID].IsVisible)
+                continue;
+#endif
             std::string meshKey = GetMeshKey(item.MeshPtr, item.MaterialPtr);
             s_Data.MeshBatches[meshKey].push_back(item);
         }
@@ -511,6 +543,10 @@ namespace ForgeEngine
 
         for (const auto& item : items)
         {
+#ifdef FENGINE_OCCLUSION_CULLING
+            if (!s_Data.EntityCullingInfo[item.EntityID].IsVisible)
+                continue;
+#endif
             transforms.push_back(item.Transform);
             colors.push_back(item.Color);
             entityIDs.push_back(item.EntityID);
@@ -522,8 +558,8 @@ namespace ForgeEngine
 
         // Update statistics
         s_Data.Stats.InstancedDrawCalls++;
-        s_Data.Stats.TotalInstances += items.size();
-        s_Data.Stats.InstancedObjects += items.size();
+        s_Data.Stats.TotalInstances += transforms.size();
+        s_Data.Stats.InstancedObjects += transforms.size();
 
 #ifdef FENGINE_SHADER_DEBUG
         FENGINE_CORE_TRACE(
@@ -538,6 +574,11 @@ namespace ForgeEngine
     {
         FENGINE_PROFILE_FUNCTION();
 
+#ifdef FENGINE_OCCLUSION_CULLING
+        if (!s_Data.EntityCullingInfo[item.EntityID].IsVisible)
+            return;
+#endif
+
         Ref<Material> material = item.MaterialPtr;
         if (!material)
         {
@@ -549,6 +590,55 @@ namespace ForgeEngine
         DrawMeshInternal(item.Transform, item.MeshPtr, material, item.EntityID);
         s_Data.Stats.IndividualObjects++;
     }
+
+#ifdef FENGINE_OCCLUSION_CULLING
+    void Renderer3D::PerformOcclusionQueries()
+    {
+        EarlyDepthTestManager::BeginDepthPrePass();
+
+        s_Data.MeshShader->Bind();
+
+        for (const auto& item : s_Data.RenderQueue)
+        {
+            auto& data = s_Data.EntityCullingInfo[item.EntityID];
+            if (data.QueryID == 0)
+                glGenQueries(1, &data.QueryID);
+
+            glm::vec3 position = glm::vec3(item.Transform[3]);
+            float radius = data.BoundingSphereRadius;
+            glm::mat4 transform = glm::translate(glm::mat4(1.0f), position)
+                * glm::scale(glm::mat4(1.0f), glm::vec3(radius));
+
+            glBeginQuery(GL_ANY_SAMPLES_PASSED, data.QueryID);
+
+            s_Data.MeshShader->SetMat4("u_Transform", transform);
+            s_Data.SphereMesh->GetVertexArray()->Bind();
+            RenderCommand::DrawIndexed(s_Data.SphereMesh->GetVertexArray(),
+                                       s_Data.SphereMesh->GetIndexCount());
+
+            glEndQuery(GL_ANY_SAMPLES_PASSED);
+        }
+
+        EarlyDepthTestManager::EndDepthPrePass();
+
+        for (auto& [id, data] : s_Data.EntityCullingInfo)
+        {
+            if (data.QueryID)
+            {
+                GLuint result = GL_TRUE;
+                glGetQueryObjectuiv(data.QueryID, GL_QUERY_RESULT, &result);
+                data.IsVisible = result != 0;
+            }
+        }
+
+        s_Data.VisibleMeshCount = 0;
+        for (const auto& item : s_Data.RenderQueue)
+        {
+            if (s_Data.EntityCullingInfo[item.EntityID].IsVisible)
+                s_Data.VisibleMeshCount++;
+        }
+    }
+#endif
 
     bool Renderer3D::ShouldUseInstancing(const std::vector<RenderItem>& items)
     {
