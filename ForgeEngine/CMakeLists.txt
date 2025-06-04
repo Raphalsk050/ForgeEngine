@@ -281,6 +281,8 @@ forge_add_library(ForgeRendererBase
         Core/Renderer/UniformBuffer.cpp
         Core/Renderer/Texture.h
         Core/Renderer/Texture.cpp
+        Core/Renderer/Framebuffer.h
+        Core/Renderer/Framebuffer.cpp
 )
 
 target_link_libraries(ForgeRendererBase
@@ -358,6 +360,8 @@ forge_add_library(ForgeOpenGL
         Platform/OpenGL/OpenGLTexture2D.cpp
         Platform/OpenGL/OpenGLVertexArray.h
         Platform/OpenGL/OpenGLVertexArray.cpp
+        Platform/OpenGL/OpenGLFramebuffer.h
+        Platform/OpenGL/OpenGLFramebuffer.cpp
 )
 
 target_link_libraries(ForgeOpenGL

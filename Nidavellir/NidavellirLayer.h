@@ -4,6 +4,7 @@
 
 #include "Core/Camera/Camera3DController.h"
 #include "Core/Renderer/Mesh.h"
+#include "Core/Renderer/Framebuffer.h"
 
 namespace ForgeEngine
 {
@@ -44,6 +45,9 @@ namespace ForgeEngine
         bool render_debug_options_ui_enabled_ = false;
 
         Ref<Mesh> mesh_;
+
+        Ref<Framebuffer> framebuffer_;
+        glm::vec2 viewport_size_ = {0.0f, 0.0f};
 
 
         // Controle de instancing automático
