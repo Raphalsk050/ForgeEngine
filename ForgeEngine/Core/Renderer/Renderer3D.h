@@ -24,7 +24,8 @@ namespace ForgeEngine
             glDepthFunc(GL_LESS);
             glDepthMask(GL_TRUE);
             glEnable(GL_CULL_FACE);
-            glCullFace(GL_FRONT);
+            glCullFace(GL_BACK);
+            glFrontFace(GL_CCW);
             glDepthRange(0.0, 1.0);
             glClearDepth(1.0);
             FENGINE_CORE_INFO("Early Depth Test initialized");
