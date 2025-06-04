@@ -24,7 +24,8 @@ namespace ForgeEngine
             glDepthFunc(GL_LESS);
             glDepthMask(GL_TRUE);
             glEnable(GL_CULL_FACE);
-            glCullFace(GL_FRONT);
+            glCullFace(GL_BACK);
+            glFrontFace(GL_CCW);
             glDepthRange(0.0, 1.0);
             glClearDepth(1.0);
             FENGINE_CORE_INFO("Early Depth Test initialized");
@@ -271,7 +272,7 @@ namespace ForgeEngine
 
         // Helpers para agrupamento
         static bool ShouldUseInstancing(const std::vector<RenderItem>& items);
-        static std::string GetMeshKey(Ref<Mesh> mesh);
+        static std::string GetMeshKey(Ref<Mesh> mesh, Ref<Material> material);
 
         // Função helper para culling centralizado (mantida)
         friend bool PerformCulling(int entityID, const glm::mat4& transform,
