@@ -1,4 +1,8 @@
 cmake_minimum_required(VERSION 3.31)
+
+# Run first time environment setup before the project is configured
+include(cmake/FirstRunSetup.cmake)
+
 project(ForgeApplication)
 
 set(CMAKE_CXX_STANDARD 20)
