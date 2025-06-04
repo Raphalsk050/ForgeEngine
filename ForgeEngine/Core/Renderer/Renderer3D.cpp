@@ -43,7 +43,7 @@ namespace ForgeEngine
         // Collection of render items for batching
         std::vector<Renderer3D::RenderItem> RenderQueue;
 
-        // Mapping mesh -> items for efficient batching
+        // Mapping mesh+material -> items for efficient batching
         std::unordered_map<std::string, std::vector<Renderer3D::RenderItem>>
         MeshBatches;
 
@@ -476,10 +476,10 @@ namespace ForgeEngine
             return;
         }
 
-        // Group items by mesh
+        // Group items by mesh and material
         for (const auto& item : s_Data.RenderQueue)
         {
-            std::string meshKey = GetMeshKey(item.MeshPtr);
+            std::string meshKey = GetMeshKey(item.MeshPtr, item.MaterialPtr);
             s_Data.MeshBatches[meshKey].push_back(item);
         }
 
@@ -528,7 +528,8 @@ namespace ForgeEngine
 #ifdef FENGINE_SHADER_DEBUG
         FENGINE_CORE_TRACE(
             "Rendered {} instances of mesh {} in single draw call",
-            items.size(), GetMeshKey(items[0].MeshPtr));
+            items.size(),
+            GetMeshKey(items[0].MeshPtr, items[0].MaterialPtr));
 #endif
 
     }
@@ -556,10 +557,12 @@ namespace ForgeEngine
             && items.size() <= s_Data.InstanceRenderer->GetMaxInstances();
     }
 
-    std::string Renderer3D::GetMeshKey(Ref<Mesh> mesh)
+    std::string Renderer3D::GetMeshKey(Ref<Mesh> mesh, Ref<Material> material)
     {
-        // Use mesh pointer as unique key
-        return std::to_string(reinterpret_cast<uintptr_t>(mesh.get()));
+        // Use mesh and material pointers as unique key
+        uintptr_t meshPtr = reinterpret_cast<uintptr_t>(mesh.get());
+        uintptr_t matPtr = reinterpret_cast<uintptr_t>(material.get());
+        return std::to_string(meshPtr) + "_" + std::to_string(matPtr);
     }
 
     void Renderer3D::SubmitRenderItem(const RenderItem& item)

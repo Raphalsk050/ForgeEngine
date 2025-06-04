@@ -271,7 +271,7 @@ namespace ForgeEngine
 
         // Helpers para agrupamento
         static bool ShouldUseInstancing(const std::vector<RenderItem>& items);
-        static std::string GetMeshKey(Ref<Mesh> mesh);
+        static std::string GetMeshKey(Ref<Mesh> mesh, Ref<Material> material);
 
         // Função helper para culling centralizado (mantida)
         friend bool PerformCulling(int entityID, const glm::mat4& transform,
