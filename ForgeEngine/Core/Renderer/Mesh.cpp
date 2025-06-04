@@ -57,75 +57,66 @@ Ref<Mesh> Mesh::CreateCube(float size) {
     { ShaderDataType::Float2, "a_TexCoord" }
   };
 
-  // Create cube vertices
-  // This is a simplified cube with positions, normals, tangents, and texture coordinates
   float halfSize = size * 0.5f;
-  std::vector<float> vertices = {
-    // Front face - each vertex has position (3), normal (3), tangent (3), texcoord (2)
-    -halfSize, -halfSize,  halfSize,  0.0f, 0.0f, 1.0f,  1.0f, 0.0f, 0.0f,  0.0f, 0.0f, // bottom-left
-     halfSize, -halfSize,  halfSize,  0.0f, 0.0f, 1.0f,  1.0f, 0.0f, 0.0f,  1.0f, 0.0f, // bottom-right
-     halfSize,  halfSize,  halfSize,  0.0f, 0.0f, 1.0f,  1.0f, 0.0f, 0.0f,  1.0f, 1.0f, // top-right
-    -halfSize,  halfSize,  halfSize,  0.0f, 0.0f, 1.0f,  1.0f, 0.0f, 0.0f,  0.0f, 1.0f, // top-left
 
-    // Back face
-    -halfSize, -halfSize, -halfSize,  0.0f, 0.0f, -1.0f, -1.0f, 0.0f, 0.0f,  1.0f, 0.0f, // bottom-left
-    -halfSize,  halfSize, -halfSize,  0.0f, 0.0f, -1.0f, -1.0f, 0.0f, 0.0f,  1.0f, 1.0f, // top-left
-     halfSize,  halfSize, -halfSize,  0.0f, 0.0f, -1.0f, -1.0f, 0.0f, 0.0f,  0.0f, 1.0f, // top-right
-     halfSize, -halfSize, -halfSize,  0.0f, 0.0f, -1.0f, -1.0f, 0.0f, 0.0f,  0.0f, 0.0f, // bottom-right
-
-    // Left face
-    -halfSize, -halfSize, -halfSize, -1.0f, 0.0f, 0.0f,  0.0f, 0.0f, -1.0f,  0.0f, 0.0f, // bottom-left
-    -halfSize, -halfSize,  halfSize, -1.0f, 0.0f, 0.0f,  0.0f, 0.0f, -1.0f,  1.0f, 0.0f, // bottom-right
-    -halfSize,  halfSize,  halfSize, -1.0f, 0.0f, 0.0f,  0.0f, 0.0f, -1.0f,  1.0f, 1.0f, // top-right
-    -halfSize,  halfSize, -halfSize, -1.0f, 0.0f, 0.0f,  0.0f, 0.0f, -1.0f,  0.0f, 1.0f, // top-left
-
-    // Right face
-     halfSize, -halfSize,  halfSize,  1.0f, 0.0f, 0.0f,  0.0f, 0.0f, 1.0f,   0.0f, 0.0f, // bottom-left
-     halfSize, -halfSize, -halfSize,  1.0f, 0.0f, 0.0f,  0.0f, 0.0f, 1.0f,   1.0f, 0.0f, // bottom-right
-     halfSize,  halfSize, -halfSize,  1.0f, 0.0f, 0.0f,  0.0f, 0.0f, 1.0f,   1.0f, 1.0f, // top-right
-     halfSize,  halfSize,  halfSize,  1.0f, 0.0f, 0.0f,  0.0f, 0.0f, 1.0f,   0.0f, 1.0f, // top-left
-
-    // Bottom face
-    -halfSize, -halfSize, -halfSize,  0.0f, -1.0f, 0.0f,  1.0f, 0.0f, 0.0f,  0.0f, 0.0f, // bottom-left
-     halfSize, -halfSize, -halfSize,  0.0f, -1.0f, 0.0f,  1.0f, 0.0f, 0.0f,  1.0f, 0.0f, // bottom-right
-     halfSize, -halfSize,  halfSize,  0.0f, -1.0f, 0.0f,  1.0f, 0.0f, 0.0f,  1.0f, 1.0f, // top-right
-    -halfSize, -halfSize,  halfSize,  0.0f, -1.0f, 0.0f,  1.0f, 0.0f, 0.0f,  0.0f, 1.0f, // top-left
-
-    // Top face
-    -halfSize,  halfSize,  halfSize,  0.0f, 1.0f, 0.0f,  1.0f, 0.0f, 0.0f,   0.0f, 0.0f, // bottom-left
-     halfSize,  halfSize,  halfSize,  0.0f, 1.0f, 0.0f,  1.0f, 0.0f, 0.0f,   1.0f, 0.0f, // bottom-right
-     halfSize,  halfSize, -halfSize,  0.0f, 1.0f, 0.0f,  1.0f, 0.0f, 0.0f,   1.0f, 1.0f, // top-right
-    -halfSize,  halfSize, -halfSize,  0.0f, 1.0f, 0.0f,  1.0f, 0.0f, 0.0f,   0.0f, 1.0f  // top-left
+  // 8 unique corner positions
+  std::vector<glm::vec3> positions = {
+      {-halfSize, -halfSize, halfSize},  // 0
+      {halfSize, -halfSize, halfSize},   // 1
+      {halfSize, halfSize, halfSize},    // 2
+      {-halfSize, halfSize, halfSize},   // 3
+      {-halfSize, -halfSize, -halfSize}, // 4
+      {halfSize, -halfSize, -halfSize},  // 5
+      {halfSize, halfSize, -halfSize},   // 6
+      {-halfSize, halfSize, -halfSize}   // 7
   };
 
-  // Create indices for the cube
-  std::vector<uint32_t> indices = {
-    // Front face
-    0, 1, 2, 2, 3, 0,
+  // Build vertex attributes from positions
+  std::vector<float> vertexData;
+  vertexData.reserve(positions.size() * 11);
 
-    // Back face
-    4, 5, 6, 6, 7, 4,
-
-    // Left face
-    8, 9, 10, 10, 11, 8,
-
-    // Right face
-    12, 13, 14, 14, 15, 12,
-
-    // Bottom face
-    16, 17, 18, 18, 19, 16,
-
-    // Top face
-    20, 21, 22, 22, 23, 20
+  auto computeTangent = [](const glm::vec3& normal) {
+    glm::vec3 up = glm::abs(normal.y) > 0.99f ? glm::vec3(1.0f, 0.0f, 0.0f)
+                                              : glm::vec3(0.0f, 1.0f, 0.0f);
+    glm::vec3 tangent = glm::normalize(glm::cross(up, normal));
+    return tangent;
   };
 
-  // Set up the mesh
-  Ref<VertexBuffer> vertexBuffer = VertexBuffer::Create(vertices.data(), vertices.size() * sizeof(float));
+  for (const auto& pos : positions) {
+    glm::vec3 normal = glm::normalize(pos);
+    glm::vec3 tangent = computeTangent(normal);
+    glm::vec2 uv{pos.x / size + 0.5f, pos.y / size + 0.5f};
+
+    vertexData.push_back(pos.x);
+    vertexData.push_back(pos.y);
+    vertexData.push_back(pos.z);
+    vertexData.push_back(normal.x);
+    vertexData.push_back(normal.y);
+    vertexData.push_back(normal.z);
+    vertexData.push_back(tangent.x);
+    vertexData.push_back(tangent.y);
+    vertexData.push_back(tangent.z);
+    vertexData.push_back(uv.x);
+    vertexData.push_back(uv.y);
+  }
+
+  // Indices referencing the 8 vertices
+  std::vector<uint32_t> cubeIndices = {
+      0, 1, 2, 2, 3, 0,       // Front
+      1, 5, 6, 6, 2, 1,       // Right
+      5, 4, 7, 7, 6, 5,       // Back
+      4, 0, 3, 3, 7, 4,       // Left
+      4, 5, 1, 1, 0, 4,       // Bottom
+      3, 2, 6, 6, 7, 3        // Top
+  };
+
+  Ref<VertexBuffer> vertexBuffer =
+      VertexBuffer::Create(vertexData.data(), vertexData.size() * sizeof(float));
   vertexBuffer->SetLayout(layout);
   mesh->SetVertexBuffer(vertexBuffer);
-  mesh->m_VertexCount = 24; // 6 faces * 4 vertices per face
+  mesh->m_VertexCount = positions.size();
 
-  mesh->SetIndices(indices);
+  mesh->SetIndices(cubeIndices);
 
   return mesh;
 }
