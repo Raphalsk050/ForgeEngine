@@ -38,11 +38,12 @@ namespace ForgeEngine
 
         Renderer3D::EnableAutoInstancing(auto_instancing_enabled_);
 
+        // TODO(rafael): pass this viewport logic to the editor renderer
         FramebufferSpecification spec;
         spec.Width = Application::Get().GetWindow().GetWidth();
         spec.Height = Application::Get().GetWindow().GetHeight();
         framebuffer_ = Framebuffer::Create(spec);
-        viewport_size_ = { (float)spec.Width, (float)spec.Height };
+        viewport_size_ = {(float)spec.Width, (float)spec.Height};
         camera_controller_.OnResize(spec.Width, spec.Height);
     }
 
@@ -67,9 +68,11 @@ namespace ForgeEngine
         Renderer3D::EnableWireframe(wireframe_enabled_);
         position = glm::vec3(x, 0.0f, z);
 
+        // TODO(rafael): pass this viewport logic to the editor renderer
+        RenderCommand::SetClearColor({0.01, 0.01, 0.01, 1.0f});
+        RenderCommand::Clear();
         Renderer3D::ResetStats();
         framebuffer_->Bind();
-        RenderCommand::SetClearColor({0.01, 0.01, 0.01, 1.0f});
         RenderCommand::Clear();
 
         Renderer3D::BeginScene(camera_controller_.GetCamera());
@@ -136,15 +139,16 @@ namespace ForgeEngine
 
     void NidavellirLayer::OnImGuiRender()
     {
+        // TODO(rafael): pass this viewport logic to the editor renderer
         ImGui::Begin("Viewport");
         ImVec2 size = ImGui::GetContentRegionAvail();
         if (size.x > 0 && size.y > 0 && (size.x != viewport_size_.x || size.y != viewport_size_.y))
         {
             framebuffer_->Resize((uint32_t)size.x, (uint32_t)size.y);
             camera_controller_.OnResize(size.x, size.y);
-            viewport_size_ = { size.x, size.y };
+            viewport_size_ = {size.x, size.y};
         }
-        ImGui::Image((void*)(intptr_t)framebuffer_->GetColorAttachmentRendererID(), size, ImVec2{0,1}, ImVec2{1,0});
+        ImGui::Image((void*)(intptr_t)framebuffer_->GetColorAttachmentRendererID(), size, ImVec2{0, 1}, ImVec2{1, 0});
         ImGui::End();
 
         RenderHelperUI();
